@@ -3,34 +3,47 @@
 - Banner
 - Scalable Container
 - Remove Undo
-
-
 /* Banner
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 .banner {
-    height: 75px;
-    background-color: rgb(66, 196, 247); /* Machine Learning Color is orange */
-    padding-top: 0px;
+    height: 50px;
+    background-color: #0D76BF;
+    padding-top: 5px;
     padding-left: 0px;
     padding-right: 0px;
     width: 100%;
     margin-bottom: 10px;
 }
 
-.banner h2 {
+.banner h5 {
     color: white;
     margin-left: 5%;
     display: inline-block;
     font-family: 'Open Sans', sans-serif;
-    font-size:4rem;
+    font-size:2rem;
     line-height:1;
+    text-transform:uppercase;
 }
 
 .banner Img {
     position: relative;
     float: right;
     right: 5%;
-    height: 75px;
+    height: 40px;
+}
+
+.section-banner {
+    background-color:#E1FFFF;
+    color: #2a3f5f;
+    text-align: center;
+    font-weight: bold;
+    border-radius: 10px;
+    box-shadow: 0 3px 2px 2px #2a3f5f;
+    padding: 5px 5px;
+}
+
+#top-section-container {
+    margin: 10px 0px;
 }
 
 /* Scalable Container

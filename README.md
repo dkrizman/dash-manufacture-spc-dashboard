@@ -1,7 +1,14 @@
-## Introduction
-`dash-app-template` is a repository created to serve as a guideline of what a Dash app's repository should look like. 
+## Reference :
 
-In this area, include a brief description of what the application does, and include a link to the [Heroku application](https://dash-tsne.plot.ly/). 
+* Spotfire manufacturing solutions [Link](https://community.tibco.com/wiki/tibco-spotfire-and-tibco-streambase-manufacturing-solutions)
+
+
+## Introduction
+`dash-spc-dashboard` is a repository created to serve as a guideline of what a Dash app's repository should look like. 
+
+SPC dashboard helps manufacturing clients to explore, monitor, and analyze their production lines.
+
+Customize your own SPC dashboards to track metrics in real-time!
 
 ### app_mock.py and app.py
 
