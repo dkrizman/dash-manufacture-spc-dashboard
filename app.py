@@ -102,7 +102,7 @@ def generate_graph(interval, value, curr_fig):
         curr_fig['data'][0]['y'] = []
         curr_fig['data'][0]['x'] = []
 
-    len_figure=len(curr_fig['data'][0]['x'])
+    len_figure = len(curr_fig['data'][0]['x'])
     # print('length of figure: ', len_figure)
 
     layout = dict(title='Individual measurements', showlegend=True, xaxis={
@@ -113,8 +113,10 @@ def generate_graph(interval, value, curr_fig):
         'title': value,
         'autorange': True
     }, annotations=[
-        {'x': len_figure+2, 'y': lcl, 'xref': 'x', 'yref': 'y', 'text': 'LCL:'+str(round(lcl, 2)), 'showarrow': True},
-        {'x': len_figure+2, 'y': ucl, 'xref': 'x', 'yref': 'y', 'text': 'UCL: '+str(round(ucl,2)), 'showarrow': True},
+        {'x': len_figure + 2, 'y': lcl, 'xref': 'x', 'yref': 'y', 'text': 'LCL:' + str(round(lcl, 2)),
+         'showarrow': True},
+        {'x': len_figure + 2, 'y': ucl, 'xref': 'x', 'yref': 'y', 'text': 'UCL: ' + str(round(ucl, 2)),
+         'showarrow': True},
     ], shapes=[
         {
             'type': 'line',
@@ -194,7 +196,7 @@ def generate_metric_list():
             },
             {
                 'id': "m_header_4",
-                'children': html.Div("%OOC")
+                'children': html.Div("OOC Number")
             },
             {
                 'id': "m_header_5",
@@ -213,7 +215,7 @@ def generate_metric_list():
         input_list.append(Input(item, 'n_clicks'))
 
         sparkline_graph_id = item + '_sparkline_graph_' + str(index)
-        count_id = item + '_count_'+str(index)
+        count_id = item + '_count_' + str(index)
 
         children.append(
             generate_metric_row(
@@ -224,7 +226,7 @@ def generate_metric_list():
                 },
                 {
                     'id': count_id,
-                    'children': html.P('24')
+                    'children': html.P('0')
                 },
                 {
                     'id': item + '_sparkline_' + str(index),
@@ -264,7 +266,7 @@ def generate_metric_list():
             )
         )
 
-
+        # Update sparkline plot, count number in Metrics
         @app.callback(
             output=[Output(sparkline_graph_id, 'figure'),
                     Output(count_id, 'children')
@@ -283,15 +285,13 @@ def generate_metric_list():
             count = len(x_array)
 
             len_figure = len(curr_spark_graph['data'][0]['x'])
-            count_num = html.P(str(len_figure))
+            count_children = html.P(children=str(len_figure))
 
             if len(curr_spark_graph['data'][0]['x']) < count:
                 curr_spark_graph['data'][0]['x'].append(x_array[len(curr_spark_graph['data'][0]['x'])])
                 curr_spark_graph['data'][0]['y'].append(y_array[len(curr_spark_graph['data'][0]['y'])])
 
-            return curr_spark_graph, len_figure
-
-
+            return curr_spark_graph, count_children
 
     metric_header_div.append(
         html.Div(
@@ -303,6 +303,7 @@ def generate_metric_list():
         )
     )
 
+    # Update live-SPC chart upon click on metric row
     def update_graph(*inputs):
         click_state = inputs[-1]
         interval = inputs[-3]
