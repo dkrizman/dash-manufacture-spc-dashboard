@@ -19,13 +19,18 @@ def get_graph_stats(df, param):
 
     return dff, count, mean, ucl, lcl, min, max
 
+# Calculate %OOC
 
 output = get_graph_stats(df, 'Para8')
 print(output[1:])
-for i in output[0]['Para8']:
-    ooc = 0
-    if i > output[3] or i < output[4]:
-        print(i)
-        ooc += 1
-    ooc = (ooc/len(output[0]))*100
-print("ooc:", ooc, '%')
+
+# def get_ooc_stats(df, param):
+#
+#     for i in output[0]['Para8']:
+#         num_ooc = 0
+#         if i > output[3] or i < output[4]:
+#             print(i)
+#             ooc += 1
+#         ooc = (ooc/len(output[0]))*100
+#
+#     return ooc

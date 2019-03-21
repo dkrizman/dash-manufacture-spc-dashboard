@@ -213,6 +213,7 @@ def generate_metric_list():
         input_list.append(Input(item, 'n_clicks'))
 
         sparkline_graph_id = item + '_sparkline_graph_' + str(index)
+        count_id = item + '_count_'+str(index)
 
         children.append(
             generate_metric_row(
@@ -222,8 +223,8 @@ def generate_metric_list():
                     'children': item
                 },
                 {
-                    'id': item + '_count_' + str(index),
-                    'children': 0
+                    'id': count_id,
+                    'children': html.P('24')
                 },
                 {
                     'id': item + '_sparkline_' + str(index),
@@ -263,26 +264,34 @@ def generate_metric_list():
             )
         )
 
+
         @app.callback(
-            output=Output(sparkline_graph_id, 'figure'),
+            output=[Output(sparkline_graph_id, 'figure'),
+                    Output(count_id, 'children')
+                    ],
             inputs=[
                 Input('interval-component', 'n_intervals')
             ],
             state=[
                 State(sparkline_graph_id, 'figure')
             ])
-        def generate_sparkline_graph(interval, curr_graph):
-            param = curr_graph['data'][0]['name']
+        def generate_sparkline_graph(interval, curr_spark_graph):
+            param = curr_spark_graph['data'][0]['name']
             dff = df[['Batch', param]][:]
             x_array = dff['Batch'].tolist()
             y_array = dff[param].tolist()
             count = len(x_array)
 
-            if len(curr_graph['data'][0]['x']) < count:
-                curr_graph['data'][0]['x'].append(x_array[len(curr_graph['data'][0]['x'])])
-                curr_graph['data'][0]['y'].append(y_array[len(curr_graph['data'][0]['y'])])
+            len_figure = len(curr_spark_graph['data'][0]['x'])
+            count_num = html.P(str(len_figure))
 
-            return curr_graph
+            if len(curr_spark_graph['data'][0]['x']) < count:
+                curr_spark_graph['data'][0]['x'].append(x_array[len(curr_spark_graph['data'][0]['x'])])
+                curr_spark_graph['data'][0]['y'].append(y_array[len(curr_spark_graph['data'][0]['y'])])
+
+            return curr_spark_graph, len_figure
+
+
 
     metric_header_div.append(
         html.Div(
