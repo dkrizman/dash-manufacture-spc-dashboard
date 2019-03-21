@@ -13,7 +13,7 @@ from Data import *
 app = dash.Dash(__name__)
 # server = app.server
 app.scripts.config.serve_locally = True
-app.config['suppress_callback_exceptions']=True
+app.config['suppress_callback_exceptions'] = True
 
 df = pd.read_csv("data/spc_data.csv")
 params = list(df)
@@ -78,6 +78,7 @@ def create_callback(retfunc):
 
     creates a callback function
     """
+
     def callback(*input_values):
         if input_values is not None and input_values != 'None':
             try:
@@ -95,11 +96,14 @@ def create_callback(retfunc):
 
 
 def generate_graph(interval, value, curr_fig):
-    dff, count, mean, ucl, lcl, min, max = get_graph_trends(df, value)
+    dff, count, mean, ucl, lcl, min, max = get_graph_stats(df, value)
 
     if curr_fig['data'][0]['name'] != value:
         curr_fig['data'][0]['y'] = []
         curr_fig['data'][0]['x'] = []
+
+    len_figure=len(curr_fig['data'][0]['x'])
+    # print('length of figure: ', len_figure)
 
     layout = dict(title='Individual measurements', showlegend=True, xaxis={
         'zeroline': False,
@@ -109,7 +113,8 @@ def generate_graph(interval, value, curr_fig):
         'title': value,
         'autorange': True
     }, annotations=[
-        {'x': 2, 'y': lcl, 'xref': 'x', 'yref': 'y', 'text': 'LCL', 'showarrow': True},
+        {'x': len_figure+2, 'y': lcl, 'xref': 'x', 'yref': 'y', 'text': 'LCL:'+str(round(lcl, 2)), 'showarrow': True},
+        {'x': len_figure+2, 'y': ucl, 'xref': 'x', 'yref': 'y', 'text': 'UCL: '+str(round(ucl,2)), 'showarrow': True},
     ], shapes=[
         {
             'type': 'line',
@@ -117,7 +122,7 @@ def generate_graph(interval, value, curr_fig):
             'yref': 'y',
             'x0': 1,
             'y0': ucl,
-            'x1': interval + 2,
+            'x1': len_figure + 2,
             'y1': ucl,
             'line': {
                 'color': 'rgb(50, 171, 96)',
@@ -131,7 +136,7 @@ def generate_graph(interval, value, curr_fig):
             'yref': 'y',
             'x0': 1,
             'y0': mean,
-            'x1': interval + 2,
+            'x1': len_figure + 2,
             'y1': mean,
             'line': {
                 'color': 'rgb(255,127,80)',
@@ -144,7 +149,7 @@ def generate_graph(interval, value, curr_fig):
             'yref': 'y',
             'x0': 1,
             'y0': lcl,
-            'x1': interval + 2,
+            'x1': len_figure + 2,
             'y1': lcl,
             'line': {
                 'color': 'rgb(50, 171, 96)',
@@ -168,7 +173,6 @@ def generate_graph(interval, value, curr_fig):
 
 
 def generate_metric_list():
-
     # 1 build header
     metric_header_div = [
         generate_metric_row(
@@ -200,7 +204,7 @@ def generate_metric_list():
                 'id': "m_header_6",
                 'children': html.Div("Pass / Fail")
             }),
-        ]
+    ]
 
     input_list = []
     children = []
@@ -208,35 +212,36 @@ def generate_metric_list():
         item = params[index]
         input_list.append(Input(item, 'n_clicks'))
 
-        sparkline_graph_id = item+'_sparkline_graph_'+str(index)
+        sparkline_graph_id = item + '_sparkline_graph_' + str(index)
+
         children.append(
             generate_metric_row(
                 item, None,
                 {
-                    'id': item+"_"+str(index),
+                    'id': item + "_" + str(index),
                     'children': item
                 },
                 {
-                    'id': item+'_count_'+str(index),
+                    'id': item + '_count_' + str(index),
                     'children': 0
                 },
                 {
-                    'id': item+'_sparkline_'+str(index),
+                    'id': item + '_sparkline_' + str(index),
                     'children': dcc.Graph(
                         id=sparkline_graph_id,
                         style={
-                            'width':'100%',
-                            'height':'95%',
-                            'border':'1px solid red' # todo delete this
+                            'width': '100%',
+                            'height': '95%',
+                            'border': '1px solid red'  # todo delete this
                         },
                         config={
-                            'staticPlot':False,
+                            'staticPlot': False,
                             'editable': False,
                             'displayModeBar': False
                         },
                         figure=go.Figure({
                             'data': [{'x': [], 'y': [], 'mode': 'lines+markers', 'name': item, }],
-                            'layout':{
+                            'layout': {
                                 'margin': dict(
                                     l=0, r=0, t=4, b=4, pad=0
                                 )
@@ -244,15 +249,15 @@ def generate_metric_list():
                         }))
                 },
                 {
-                    'id': item+'_OCCnumber_'+str(index),
+                    'id': item + '_OCCnumber_' + str(index),
                     'children': 0
                 },
                 {
-                    'id': item+'_OCCgraph_'+str(index),
+                    'id': item + '_OCCgraph_' + str(index),
                     'children': html.Div('aaa')
                 },
                 {
-                    'id': item+'_pf_'+str(index),
+                    'id': item + '_pf_' + str(index),
                     'children': html.Div('aaa')
                 }
             )
@@ -276,11 +281,8 @@ def generate_metric_list():
             if len(curr_graph['data'][0]['x']) < count:
                 curr_graph['data'][0]['x'].append(x_array[len(curr_graph['data'][0]['x'])])
                 curr_graph['data'][0]['y'].append(y_array[len(curr_graph['data'][0]['y'])])
-                # curr_graph['layout'] = layout
 
             return curr_graph
-
-
 
     metric_header_div.append(
         html.Div(
@@ -301,7 +303,7 @@ def generate_metric_list():
             return generate_graph(interval, params[8], figure), inputs[:-3]
         for j in range(len(inputs) - 3):
             if click_state[j] != inputs[j]:
-                return generate_graph(interval, params[j+1], figure), inputs[:-3]
+                return generate_graph(interval, params[j + 1], figure), inputs[:-3]
 
         curr_fig = figure['data'][0]['name']
         return generate_graph(interval, curr_fig, figure), inputs[:-3]
@@ -313,7 +315,6 @@ def generate_metric_list():
                  state=[State('control-chart-live', 'figure'), State('click_state', 'data')]
                  )(create_callback(update_graph))
 
-
     return html.Div(
         id='metric_list',
         className='row',
@@ -322,7 +323,6 @@ def generate_metric_list():
         },
         children=metric_header_div
     )
-    # for each row, build a div
 
 
 def generate_tree_map():
@@ -339,7 +339,6 @@ def generate_tree_map():
         ])
 
 
-
 def build_top_panel():
     return html.Div(
         id='top-section-container',
@@ -352,7 +351,7 @@ def build_top_panel():
             html.Div(
                 id='metric-summary-session',
                 className='six columns',
-                style={'height':'100%'},
+                style={'height': '100%'},
                 children=[
                     generate_section_banner('Process Control Metrics Summary'),
                     html.Div(
@@ -473,7 +472,7 @@ app.layout = html.Div(
 #     state=[State('control-chart-live', 'figure')]
 # )
 def update_chart(interval, value, curr_fig):
-    dff, count, mean, ucl, lcl, min, max = get_graph_trends(df, value)
+    dff, count, mean, ucl, lcl, min, max = get_graph_stats(df, value)
 
     if curr_fig['data'][0]['name'] != value:
         curr_fig['data'][0]['y'] = []
