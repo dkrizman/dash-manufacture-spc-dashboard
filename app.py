@@ -18,10 +18,17 @@ app.config['suppress_callback_exceptions']=True
 df = pd.read_csv("data/spc_data.csv")
 params = list(df)
 
-def generate_metric_row(id, col1, col2, col3, col4, col5, col6):
+
+def generate_metric_row(id, style, col1, col2, col3, col4, col5, col6):
+    if style is None:
+        style = {
+            'height': '100px',
+            'width': '100%',
+        }
     return html.Div(
         id=id,
         className='row metric-row',
+        style=style,
         children=[
             html.Div(
                 id=col1['id'],
@@ -37,7 +44,9 @@ def generate_metric_row(id, col1, col2, col3, col4, col5, col6):
             ),
             html.Div(
                 id=col3['id'],
-                style={},
+                style={
+                    'height': '100%',
+                },
                 className='five columns',
                 children=col3['children']
             ),
@@ -161,37 +170,48 @@ def generate_graph(interval, value, curr_fig):
 def generate_metric_list():
 
     # 1 build header
-    metric_header_div = [generate_metric_row('metric_header',  {
-            'id': "m_header_1",
-            'children': html.Div("Parameter")
-        },
-        {
-            'id': "m_header_2",
-            'children': html.Div("Count")
-        },
-        {
-            'id': "m_header_3",
-            'children': html.Div("Sparkline")
-        },
-        {
-            'id': "m_header_4",
-            'children': html.Div("%OOC")
-        },
-        {
-            'id': "m_header_5",
-            'children': html.Div("%OOC")
-        },
-        {
-            'id': "m_header_6",
-            'children': html.Div("Pass / Fail")
-        })]
+    metric_header_div = [
+        generate_metric_row(
+            'metric_header',
+            {
+                'height': '50px'
+            },
+            {
+                'id': "m_header_1",
+                'children': html.Div("Parameter")
+            },
+            {
+                'id': "m_header_2",
+                'children': html.Div("Count")
+            },
+            {
+                'id': "m_header_3",
+                'children': html.Div("Sparkline")
+            },
+            {
+                'id': "m_header_4",
+                'children': html.Div("%OOC")
+            },
+            {
+                'id': "m_header_5",
+                'children': html.Div("%OOC")
+            },
+            {
+                'id': "m_header_6",
+                'children': html.Div("Pass / Fail")
+            }),
+        ]
+
     input_list = []
+    children = []
     for index in range(1, len(params)):
         item = params[index]
         input_list.append(Input(item, 'n_clicks'))
-        metric_header_div.append(
+
+        sparkline_graph_id = item+'_sparkline_graph_'+str(index)
+        children.append(
             generate_metric_row(
-                item,
+                item, None,
                 {
                     'id': item+"_"+str(index),
                     'children': item
@@ -202,7 +222,26 @@ def generate_metric_list():
                 },
                 {
                     'id': item+'_sparkline_'+str(index),
-                    'children': html.Div("aaa")
+                    'children': dcc.Graph(
+                        id=sparkline_graph_id,
+                        style={
+                            'width':'100%',
+                            'height':'95%',
+                            'border':'1px solid red' # todo delete this
+                        },
+                        config={
+                            'staticPlot':False,
+                            'editable': False,
+                            'displayModeBar': False
+                        },
+                        figure=go.Figure({
+                            'data': [{'x': [], 'y': [], 'mode': 'lines+markers', 'name': item, }],
+                            'layout':{
+                                'margin': dict(
+                                    l=0, r=0, t=4, b=4, pad=0
+                                )
+                            }
+                        }))
                 },
                 {
                     'id': item+'_OCCnumber_'+str(index),
@@ -218,6 +257,40 @@ def generate_metric_list():
                 }
             )
         )
+
+        @app.callback(
+            output=Output(sparkline_graph_id, 'figure'),
+            inputs=[
+                Input('interval-component', 'n_intervals')
+            ],
+            state=[
+                State(sparkline_graph_id, 'figure')
+            ])
+        def generate_sparkline_graph(interval, curr_graph):
+            param = curr_graph['data'][0]['name']
+            dff = df[['Batch', param]][:]
+            x_array = dff['Batch'].tolist()
+            y_array = dff[param].tolist()
+            count = len(x_array)
+
+            if len(curr_graph['data'][0]['x']) < count:
+                curr_graph['data'][0]['x'].append(x_array[len(curr_graph['data'][0]['x'])])
+                curr_graph['data'][0]['y'].append(y_array[len(curr_graph['data'][0]['y'])])
+                # curr_graph['layout'] = layout
+
+            return curr_graph
+
+
+
+    metric_header_div.append(
+        html.Div(
+            style={
+                'height': '100%',
+                'overflow': 'scroll'
+            },
+            children=children
+        )
+    )
 
     def update_graph(*inputs):
         click_state = inputs[-1]
@@ -240,11 +313,11 @@ def generate_metric_list():
                  state=[State('control-chart-live', 'figure'), State('click_state', 'data')]
                  )(create_callback(update_graph))
 
+
     return html.Div(
         id='metric_list',
         className='row',
         style={
-            'overflow': 'scroll',
             'height': '100%'
         },
         children=metric_header_div
@@ -321,7 +394,7 @@ def build_chart_panel():
 
             dcc.Interval(
                 id='interval-component',
-                interval=1 * 1000,  # in milliseconds
+                interval=2 * 1000,  # in milliseconds
                 n_intervals=0
             ),
 
