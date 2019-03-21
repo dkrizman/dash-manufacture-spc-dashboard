@@ -58,3 +58,7 @@
 ._dash-undo-redo {
   display: none;
 }
+
+.metric-row:hover{
+    background-color: #6c6c6c !important;
+}
