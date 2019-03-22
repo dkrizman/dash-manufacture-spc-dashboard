@@ -212,7 +212,7 @@ def generate_metric_list():
             },
             {
                 'id': "m_header_6",
-                'children': html.Div("Pass / Fail")
+                'children': html.Div("P/F")
             }),
     ]
 
@@ -223,16 +223,16 @@ def generate_metric_list():
         # Add individual rows into input list
         input_list.append(Input(item, 'n_clicks'))
 
-        sparkline_graph_id = item + '_sparkline_graph_' + str(index)
-        count_id = item + '_count_' + str(index)
-        ooc_percentage_id = item + '_OOC_number_' + str(index)
-        ooc_graph_id = item + '_OOC_graph_' + str(index)
+        sparkline_graph_id = item + '_sparkline_graph'
+        count_id = item + '_count'
+        ooc_percentage_id = item + '_OOC_number'
+        ooc_graph_id = item + '_OOC_graph'
 
         children.append(
             generate_metric_row(
-                item, None,
+                item + "_row", None,
                 {
-                    'id': item + "_" + str(index),
+                    'id': item,
                     'children': item
                 },
                 {
@@ -240,7 +240,7 @@ def generate_metric_list():
                     'children': '0'
                 },
                 {
-                    'id': item + '_sparkline_' + str(index),
+                    'id': item + '_sparkline',
                     'children': dcc.Graph(
                         id=sparkline_graph_id,
                         style={
@@ -276,6 +276,27 @@ def generate_metric_list():
                 },
             ))
 
+        # Update total count, ooc_percentage in Metrics
+        @app.callback(
+            output=[
+                Output(count_id, 'children'),
+                Output(ooc_percentage_id, 'children')
+            ],
+            inputs=[
+                Input('interval-component', 'n_intervals'),
+            ],
+            state=[
+                State(item, 'children')
+            ]
+        )
+        def update_count(interval, col):
+            if interval >= max_length:
+                total_count = max_length
+            else:
+                total_count = interval
+            ooc_percentage = "%.2f" % (state_dict[col]['ooc'][total_count] * 100) + '%'
+            return total_count, ooc_percentage
+
         # # Update sparkline plot, count number, and count_ooc in Metrics
         # Todo: remove states from state figure and re-make new one at each interval.
 
@@ -297,31 +318,6 @@ def generate_metric_list():
         #         # curr_graph['layout'] = layout
         #
         #     return curr_graph
-
-        # Update total count, ooc_percentage in Metrics
-        @app.callback(
-            output=[
-                Output(count_id, 'children'),
-                Output(ooc_percentage_id, 'children')
-            ],
-            inputs=[
-                Input('interval-component', 'n_intervals'),
-            ]
-        )
-        def update_count(interval):
-            if interval >= max_length:
-                total_count = max_length
-            else:
-                total_count = interval
-
-            # cannot find
-            ooc_percentage = state_dict[item]
-
-            print(ooc_percentage)
-
-            # ooc_percentage = str(ooc_counts*100) + '%'
-
-            return total_count, ooc_percentage
 
         #
         # @app.callback(
