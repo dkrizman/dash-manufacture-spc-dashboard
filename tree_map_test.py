@@ -3,6 +3,8 @@ import plotly.plotly as py
 import plotly.graph_objs as go
 import dash_core_components as dcc
 import dash_html_components as html
+import plotly.figure_factory as ff
+import pandas as pd
 
 import squarify
 
@@ -72,11 +74,70 @@ layout = dict(
 # With hovertext
 figure = dict(data=[trace0], layout=layout)
 
+
+# bullet plot
+data = (
+  {"label": "Revenue", "sublabel": "US$, in thousands",
+   "range": [150, 225, 300], "performance": [220,270], 'point': [5]},
+  {"label": "Profit", "sublabel": "%", "range": [20, 25, 30],
+   "performance": [21, 23], "point": [26]},
+  {"label": "Order Size", "sublabel":"US$, average","range": [350, 500, 600],
+   "performance": [100,320],"point": [550]},
+  {"label": "New Customers", "sublabel": "count", "range": [1400, 2000, 2500],
+   "performance": [1000, 1650],"point": [2100]},
+  {"label": "Satisfaction", "sublabel": "out of 5","range": [3.5, 4.25, 5],
+   "performance": [3.2, 4.7], "point": [4.4]}
+)
+
+
+ooc_bullet_df = pd.read_csv("ooc_percentage.csv")
+para4_ooc = ooc_bullet_df['Para4']
+print(para4_ooc)
+
+data = {
+    "range": [5, 10, 100],  # 3-item list [bad, okay, good].
+    "performance":
+    "measures":
+
+}
+# skip points
+fig2 = ff.create_bullet(
+    data, markers='point',
+    measures='performance', ranges='range'
+)
+
+
 app.layout = html.Div(
-    children=dcc.Graph(figure=figure)
+    children=[
+        dcc.Graph(figure=figure),
+        dcc.Graph(figure=fig2)
+    ]
 )
 
 # Running the server
 if __name__ == '__main__':
     app.run_server(dev_tools_hot_reload=False, debug=True, host='0.0.0.0', port=8051, use_reloader=False)
 
+
+
+# @app.callback(
+#             output=Output(sparkline_graph_id, 'figure'),
+#             inputs=[
+#                 Input('interval-component', 'n_intervals')
+#             ],
+#             state=[
+#                 State(sparkline_graph_id, 'figure')
+#             ])
+#         def generate_sparkline_graph(interval, curr_graph):
+#             param = curr_graph['data'][0]['name']
+#             dff = df[['Batch', param]][:]
+#             x_array = dff['Batch'].tolist()
+#             y_array = dff[param].tolist()
+#             count = len(x_array)
+#
+#             if len(curr_graph['data'][0]['x']) < count:
+#                 curr_graph['data'][0]['x'].append(x_array[len(curr_graph['data'][0]['x'])])
+#                 curr_graph['data'][0]['y'].append(y_array[len(curr_graph['data'][0]['y'])])
+#                 # curr_graph['layout'] = layout
+#
+#             return curr_graph

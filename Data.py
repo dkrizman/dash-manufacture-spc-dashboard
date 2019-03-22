@@ -9,14 +9,14 @@ def populate_ooc(col):
     ucl = (stats['mean'] + 3 * stats['std']).tolist()
     lcl = (stats['mean'] - 3 * stats['std']).tolist()
 
-    occ_count = 0
+    ooc_count = 0
     ret = []
     for i in range(len(data)):
         if data[i] >= ucl or data[i] <= lcl:
-            occ_count += 1
-            ret.append(occ_count/(i+1))
+            ooc_count += 1
+            ret.append(ooc_count/(i+1))
         else:
-            ret.append(occ_count/(i+1))
+            ret.append(ooc_count/(i+1))
     # todo this is not correct
     return ret
 
@@ -41,13 +41,14 @@ def init_df():
                 'ooc': populate_ooc(col)
             }
         })
+
     return ret
 
 
 # test = init_df()
 # # print('test para3 ucl data :', (test['Para3']['ooc']))
 #
-# state_dict = init_df()
+state_dict = init_df()
 
 # Calculate OOC Num and index, save output to new csv
 # def get_ooc_stats(param='Speed'):

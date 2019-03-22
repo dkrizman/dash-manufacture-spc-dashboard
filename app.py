@@ -7,7 +7,7 @@ import dash_html_components as html
 from dash.dependencies import Input, Output, State
 import plotly.graph_objs as go
 
-from Data import df, state_dict
+from Data import df, state_dict, populate_ooc
 
 app = dash.Dash(__name__)
 # server = app.server
@@ -15,7 +15,7 @@ app.scripts.config.serve_locally = True
 app.config['suppress_callback_exceptions'] = True
 
 params = list(df)
-maxLength = len(df)
+max_length = len(df)
 
 
 def generate_metric_row(id, style, col1, col2, col3, col4, col5, col6):
@@ -81,13 +81,13 @@ def create_callback(retfunc):
     def callback(*input_values):
         if input_values is not None and input_values != 'None':
             try:
-                retval = retfunc(*input_values)
+                ret_val = retfunc(*input_values)
             except Exception as e:
                 exc_type, exc_obj, exc_tb = sys.exc_info()
                 fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
                 print('Callback Exception:', e, exc_type, fname, exc_tb.tb_lineno)
                 print('parameters:', *input_values)
-            return retval
+            return ret_val
         else:
             return []
 
@@ -104,12 +104,14 @@ def generate_graph(interval, value, curr_fig):
     # minimum = stats['min']
     # maximum = stats['max']
 
+    # Clear figure if value changes
     if curr_fig['data'][0]['name'] != value:
         curr_fig['data'][0]['y'] = []
         curr_fig['data'][0]['x'] = []
 
     len_figure = len(curr_fig['data'][0]['x'])
-    # print('length of figure: ', len_figure)
+
+    # Todo: set range for y axis
 
     layout = dict(title='Individual measurements', showlegend=True, xaxis={
         'zeroline': False,
@@ -181,7 +183,7 @@ def generate_graph(interval, value, curr_fig):
 
 
 def generate_metric_list():
-    # 1 build header
+    # Build header
     metric_header_div = [
         generate_metric_row(
             'metric_header',
@@ -202,7 +204,7 @@ def generate_metric_list():
             },
             {
                 'id': "m_header_4",
-                'children': html.Div("OOC Count")
+                'children': html.Div("OOC %")
             },
             {
                 'id': "m_header_5",
@@ -218,14 +220,13 @@ def generate_metric_list():
     children = []
     for index in range(1, len(params)):
         item = params[index]
+        # Add individual rows into input list
         input_list.append(Input(item, 'n_clicks'))
 
-        iStr = str(index)
-        sparkline_graph_id = item + '_sparkline_graph_' + iStr
-        count_id = item + '_count_' + iStr
-        ooc_count_id = item + '_OOC_number_' + iStr
-        ooc_graph_id = item + '_OOC_graph_' + iStr
-        occ_count_store_id = item + '_OCC_count_' + iStr
+        sparkline_graph_id = item + '_sparkline_graph_' + str(index)
+        count_id = item + '_count_' + str(index)
+        ooc_percentage_id = item + '_OOC_number_' + str(index)
+        ooc_graph_id = item + '_OOC_graph_' + str(index)
 
         children.append(
             generate_metric_row(
@@ -262,8 +263,8 @@ def generate_metric_list():
                         }))
                 },
                 {
-                    'id': ooc_count_id,
-                    'children': '0'
+                    'id': ooc_percentage_id,
+                    'children': '0.00%'
                 },
                 {
                     'id': ooc_graph_id,
@@ -276,46 +277,51 @@ def generate_metric_list():
             ))
 
         # # Update sparkline plot, count number, and count_ooc in Metrics
-        @app.callback(output=Output(sparkline_graph_id, 'figure'),
-                      inputs=[
-                          Input('interval-component', 'n_intervals')
-                      ],
-                      state=[
-                          State(sparkline_graph_id, 'figure')
-                      ])
-        def generate_sparkline_graph(interval, curr_graph):
-            col_name = curr_graph['data'][0]['name']
-            x_array = state_dict['Batch']['data'].tolist()
-            y_array = state_dict[col_name]['data'].tolist()
+        # Todo: remove states from state figure and re-make new one at each interval.
 
-            if len(curr_graph['data'][0]['x']) < len(x_array):
-                curr_graph['data'][0]['x'].append(x_array[len(curr_graph['data'][0]['x'])])
-                curr_graph['data'][0]['y'].append(y_array[len(curr_graph['data'][0]['y'])])
-                # curr_graph['layout'] = layout
+        # @app.callback(output=Output(sparkline_graph_id, 'figure'),
+        #               inputs=[
+        #                   Input('interval-component', 'n_intervals')
+        #               ],
+        #               state=[
+        #                   State(sparkline_graph_id, 'figure')
+        #               ])
+        # def generate_sparkline_graph(interval, curr_graph):
+        #     col_name = curr_graph['data'][0]['name']
+        #     x_array = state_dict['Batch']['data'].tolist()
+        #     y_array = state_dict[col_name]['data'].tolist()
+        #
+        #     if len(curr_graph['data'][0]['x']) < len(x_array):
+        #         curr_graph['data'][0]['x'].append(x_array[len(curr_graph['data'][0]['x'])])
+        #         curr_graph['data'][0]['y'].append(y_array[len(curr_graph['data'][0]['y'])])
+        #         # curr_graph['layout'] = layout
+        #
+        #     return curr_graph
 
-            return curr_graph
-
+        # Update total count, ooc_percentage in Metrics
         @app.callback(
-            output=Output(count_id, 'children'),
+            output=[
+                Output(count_id, 'children'),
+                Output(ooc_percentage_id, 'children')
+            ],
             inputs=[
                 Input('interval-component', 'n_intervals'),
             ]
         )
         def update_count(interval):
-            if interval >= maxLength:
-                return maxLength
-            return interval
+            if interval >= max_length:
+                total_count = max_length
+            else:
+                total_count = interval
 
-        @app.callback(
-            output=Output(ooc_count_id, 'children'),
-            inputs=[
-                Input('interval-component', 'n_intervals')
-            ],
-        )
-        def update_occ_1(interval):
-            if interval == maxLength:
-                interval = maxLength
-            return state_dict[item]['occ'][interval]
+            # cannot find
+            ooc_percentage = state_dict[item]
+
+            print(ooc_percentage)
+
+            # ooc_percentage = str(ooc_counts*100) + '%'
+
+            return total_count, ooc_percentage
 
         #
         # @app.callback(
@@ -327,13 +333,11 @@ def generate_metric_list():
         # def update_occ_2():
         #     pass
 
+        # todo count_children, ooc_counts
 
+        # TODO: Update OOC bullet plot
 
-            # todo count_children, ooc_counts
-
-            # TODO: Update OOC bullet plot
-
-            # TODO: Update Pass/Fail
+        # TODO: Update Pass/Fail
 
     metric_header_div.append(
         html.Div(
@@ -511,8 +515,6 @@ app.layout = html.Div(
         )
     ]
 )
-
-
 
 # # Live SPC updates by Batch_Num
 # # @app.callback(
