@@ -63,3 +63,21 @@
     background-color: #6c6c6c !important;
     cursor: pointer;
 }
+
+#metric_list .svg-container .main-svg{
+    height: 100% !important;
+    width:100% !important;
+}
+#metric_list .plot-containery{
+    height: 100% !important;
+    width:100% !important;
+}
+#metric_list .plotly{
+    height: 100% !important;
+    width:100% !important;
+}
+
+#metric_list .svg-container {
+    height: 100% !important;
+    width:100% !important;
+}

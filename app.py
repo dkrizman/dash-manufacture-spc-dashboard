@@ -7,6 +7,9 @@ import dash_html_components as html
 from dash.dependencies import Input, Output, State
 import plotly.graph_objs as go
 
+import plotly.figure_factory as ff
+import squarify
+
 from Data import df, state_dict, populate_ooc
 
 app = dash.Dash(__name__)
@@ -57,7 +60,10 @@ def generate_metric_row(id, style, col1, col2, col3, col4, col5, col6):
             ),
             html.Div(
                 id=col5['id'],
-                style={},
+                style={
+                    'height': '100%',
+
+                },
                 className='three columns',
                 children=col5['children']
             ),
@@ -204,7 +210,7 @@ def generate_metric_list():
             },
             {
                 'id': "m_header_4",
-                'children': html.Div("OOC %")
+                'children': html.Div("OOC%")
             },
             {
                 'id': "m_header_5",
@@ -267,8 +273,41 @@ def generate_metric_list():
                     'children': '0.00%'
                 },
                 {
-                    'id': ooc_graph_id,
-                    'children': html.Div("aaa")
+                    'id': ooc_graph_id + '_container',
+                    'children': dcc.Graph(
+                        id=ooc_graph_id,
+                        style={
+                            'width': '100%',
+                            'height': '95%',
+                            'border': '1px solid red'  # todo delete this
+                        },
+                        config={
+                            'staticPlot': False,
+                            'editable': False,
+                            'displayModeBar': False
+                        },
+                        figure=ff.create_bullet(
+                            data=[{
+                                "label": "label",
+                                "range": [4, 7, 10],
+                                "performance": [0, 4],
+                            }],
+                            measures='performance',
+                            ranges='range',
+                            titles='label',
+                            height=50,
+                            width=150,
+                            margin=dict(l=5, r=0, t=0, b=0, pad=0),
+                        )
+                        # go.Figure({
+                        #     # 'data': [{'x': [], 'y': [], 'mode': 'lines+markers', 'name': item, }],
+                        #     'layout': {
+                        #         'margin': dict(
+                        #             l=0, r=0, t=4, b=4, pad=0
+                        #         )
+                        #     }
+                        # })
+                    )
                 },
                 {
                     'id': item + '_pf_' + str(index),
@@ -280,7 +319,8 @@ def generate_metric_list():
         @app.callback(
             output=[
                 Output(count_id, 'children'),
-                Output(ooc_percentage_id, 'children')
+                Output(ooc_percentage_id, 'children'),
+                # Output(ooc_graph_id, 'figure')
             ],
             inputs=[
                 Input('interval-component', 'n_intervals'),
