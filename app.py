@@ -6,17 +6,16 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
 import plotly.graph_objs as go
-import plotly.figure_factory as ff
 
-from Data import *
+from Data import df, state_dict
 
 app = dash.Dash(__name__)
 # server = app.server
 app.scripts.config.serve_locally = True
 app.config['suppress_callback_exceptions'] = True
 
-df = pd.read_csv("data/spc_data.csv")
 params = list(df)
+maxLength = len(df)
 
 
 def generate_metric_row(id, style, col1, col2, col3, col4, col5, col6):
@@ -96,7 +95,14 @@ def create_callback(retfunc):
 
 
 def generate_graph(interval, value, curr_fig):
-    dff, count, mean, ucl, lcl, min, max = get_graph_stats(df, value)
+    stats = state_dict[value]
+    col_data = stats['data']
+    count = stats['count']
+    mean = stats['mean']
+    ucl = stats['ucl']
+    lcl = stats['lcl']
+    # minimum = stats['min']
+    # maximum = stats['max']
 
     if curr_fig['data'][0]['name'] != value:
         curr_fig['data'][0]['y'] = []
@@ -161,8 +167,8 @@ def generate_graph(interval, value, curr_fig):
         }
     ])
 
-    x_array = dff['Batch'].tolist()
-    y_array = dff[value].tolist()
+    x_array = state_dict['Batch']['data'].tolist()
+    y_array = col_data.tolist()
 
     curr_fig['data'][0]['name'] = value
 
@@ -196,7 +202,7 @@ def generate_metric_list():
             },
             {
                 'id': "m_header_4",
-                'children': html.Div("OOC Number")
+                'children': html.Div("OOC Count")
             },
             {
                 'id': "m_header_5",
@@ -214,8 +220,12 @@ def generate_metric_list():
         item = params[index]
         input_list.append(Input(item, 'n_clicks'))
 
-        sparkline_graph_id = item + '_sparkline_graph_' + str(index)
-        count_id = item + '_count_' + str(index)
+        iStr = str(index)
+        sparkline_graph_id = item + '_sparkline_graph_' + iStr
+        count_id = item + '_count_' + iStr
+        ooc_count_id = item + '_OOC_number_' + iStr
+        ooc_graph_id = item + '_OOC_graph_' + iStr
+        occ_count_store_id = item + '_OCC_count_' + iStr
 
         children.append(
             generate_metric_row(
@@ -226,7 +236,7 @@ def generate_metric_list():
                 },
                 {
                     'id': count_id,
-                    'children': html.P('0')
+                    'children': '0'
                 },
                 {
                     'id': item + '_sparkline_' + str(index),
@@ -252,46 +262,78 @@ def generate_metric_list():
                         }))
                 },
                 {
-                    'id': item + '_OCCnumber_' + str(index),
-                    'children': 0
+                    'id': ooc_count_id,
+                    'children': '0'
                 },
                 {
-                    'id': item + '_OCCgraph_' + str(index),
-                    'children': html.Div('aaa')
+                    'id': ooc_graph_id,
+                    'children': html.Div("aaa")
                 },
                 {
                     'id': item + '_pf_' + str(index),
                     'children': html.Div('aaa')
-                }
-            )
-        )
+                },
+            ))
 
-        # Update sparkline plot, count number in Metrics
+        # # Update sparkline plot, count number, and count_ooc in Metrics
+        @app.callback(output=Output(sparkline_graph_id, 'figure'),
+                      inputs=[
+                          Input('interval-component', 'n_intervals')
+                      ],
+                      state=[
+                          State(sparkline_graph_id, 'figure')
+                      ])
+        def generate_sparkline_graph(interval, curr_graph):
+            col_name = curr_graph['data'][0]['name']
+            x_array = state_dict['Batch']['data'].tolist()
+            y_array = state_dict[col_name]['data'].tolist()
+
+            if len(curr_graph['data'][0]['x']) < len(x_array):
+                curr_graph['data'][0]['x'].append(x_array[len(curr_graph['data'][0]['x'])])
+                curr_graph['data'][0]['y'].append(y_array[len(curr_graph['data'][0]['y'])])
+                # curr_graph['layout'] = layout
+
+            return curr_graph
+
         @app.callback(
-            output=[Output(sparkline_graph_id, 'figure'),
-                    Output(count_id, 'children')
-                    ],
+            output=Output(count_id, 'children'),
+            inputs=[
+                Input('interval-component', 'n_intervals'),
+            ]
+        )
+        def update_count(interval):
+            if interval >= maxLength:
+                return maxLength
+            return interval
+
+        @app.callback(
+            output=Output(ooc_count_id, 'children'),
             inputs=[
                 Input('interval-component', 'n_intervals')
             ],
-            state=[
-                State(sparkline_graph_id, 'figure')
-            ])
-        def generate_sparkline_graph(interval, curr_spark_graph):
-            param = curr_spark_graph['data'][0]['name']
-            dff = df[['Batch', param]][:]
-            x_array = dff['Batch'].tolist()
-            y_array = dff[param].tolist()
-            count = len(x_array)
+        )
+        def update_occ_1(interval):
+            if interval == maxLength:
+                interval = maxLength
+            return state_dict[item]['occ'][interval]
 
-            len_figure = len(curr_spark_graph['data'][0]['x'])
-            count_children = html.P(children=str(len_figure))
+        #
+        # @app.callback(
+        #     output=Output(ooc_graph_id, 'figure'),
+        #     inputs=[
+        #         Input('interval-component', 'n_intervals'),
+        #     ],
+        # )
+        # def update_occ_2():
+        #     pass
 
-            if len(curr_spark_graph['data'][0]['x']) < count:
-                curr_spark_graph['data'][0]['x'].append(x_array[len(curr_spark_graph['data'][0]['x'])])
-                curr_spark_graph['data'][0]['y'].append(y_array[len(curr_spark_graph['data'][0]['y'])])
 
-            return curr_spark_graph, count_children
+
+            # todo count_children, ooc_counts
+
+            # TODO: Update OOC bullet plot
+
+            # TODO: Update Pass/Fail
 
     metric_header_div.append(
         html.Div(
@@ -369,6 +411,7 @@ def build_top_panel():
                         style={
                             'height': '100%',
                             'width': '100%',
+                            'width': '100%',
                         },
                         children=generate_metric_list()
                     )
@@ -387,6 +430,13 @@ def build_top_panel():
     )
 
 
+def generate_section_banner(title):
+    return html.Div(
+        className="section-banner",
+        children=title
+    )
+
+
 def build_chart_panel():
     return html.Div(
         id='control-chart-container',
@@ -394,16 +444,9 @@ def build_chart_panel():
         children=[
             generate_section_banner('Live SPC Chart'),
 
-            dcc.Dropdown(
-                # Select for live-stream figure display
-                id='dropdown-select',
-                options=list({'label': i, 'value': i} for i in params),
-                value="Para4"
-            ),
-
             dcc.Interval(
                 id='interval-component',
-                interval=2 * 1000,  # in milliseconds
+                interval=3 * 1000,  # in milliseconds
                 n_intervals=0
             ),
 
@@ -415,6 +458,8 @@ def build_chart_panel():
                 )
             ),
 
+            # TODO: add real-time dash-daq alerts
+
             dcc.Graph(
                 id="moving-range",
                 figure=go.Figure({
@@ -422,13 +467,7 @@ def build_chart_panel():
                 }
                 )
             )
-        ])
-
-
-def generate_section_banner(title):
-    return html.Div(
-        className="section-banner",
-        children=title
+        ]
     )
 
 
@@ -465,93 +504,94 @@ app.layout = html.Div(
             id='tabs-content',
             className='container scalable',
             children=[
+                html.Div(id='test-update', children='test'),
                 build_top_panel(),
                 build_chart_panel(),
-                # Control chart
             ]
         )
     ]
 )
 
 
-# Live SPC updates by Batch_Num
-# @app.callback(
-#     Output('control-chart-live', 'figure'),
-#     [Input('interval-component', 'n_intervals'),
-#      Input('dropdown-select', 'value')],
-#     state=[State('control-chart-live', 'figure')]
-# )
-def update_chart(interval, value, curr_fig):
-    dff, count, mean, ucl, lcl, min, max = get_graph_stats(df, value)
 
-    if curr_fig['data'][0]['name'] != value:
-        curr_fig['data'][0]['y'] = []
-        curr_fig['data'][0]['x'] = []
-
-    layout = dict(title='Individual measurements', showlegend=True, xaxis={
-        'zeroline': False,
-        'title': 'Batch_Num',
-        'showline': False
-    }, yaxis={
-        'title': value,
-        'autorange': True
-    }, annotations=[
-        {'x': 2, 'y': lcl, 'xref': 'x', 'yref': 'y', 'text': 'LCL', 'showarrow': True},
-    ], shapes=[
-        {
-            'type': 'line',
-            'xref': 'x',
-            'yref': 'y',
-            'x0': 1,
-            'y0': ucl,
-            'x1': interval + 2,
-            'y1': ucl,
-            'line': {
-                'color': 'rgb(50, 171, 96)',
-                'width': 1,
-                'dash': 'dashdot'
-            }
-        },
-        {
-            'type': 'line',
-            'xref': 'x',
-            'yref': 'y',
-            'x0': 1,
-            'y0': mean,
-            'x1': interval + 2,
-            'y1': mean,
-            'line': {
-                'color': 'rgb(255,127,80)',
-                'width': 2
-            }
-        },
-        {
-            'type': 'line',
-            'xref': 'x',
-            'yref': 'y',
-            'x0': 1,
-            'y0': lcl,
-            'x1': interval + 2,
-            'y1': lcl,
-            'line': {
-                'color': 'rgb(50, 171, 96)',
-                'width': 1,
-                'dash': 'dashdot'
-            }
-        }
-    ])
-
-    x_array = dff['Batch'].tolist()
-    y_array = dff[value].tolist()
-
-    curr_fig['data'][0]['name'] = value
-
-    if len(curr_fig['data'][0]['x']) < count:
-        curr_fig['data'][0]['x'].append(x_array[len(curr_fig['data'][0]['x'])])
-        curr_fig['data'][0]['y'].append(y_array[len(curr_fig['data'][0]['y'])])
-        curr_fig['layout'] = layout
-
-    return curr_fig
+# # Live SPC updates by Batch_Num
+# # @app.callback(
+# #     Output('control-chart-live', 'figure'),
+# #     [Input('interval-component', 'n_intervals'),
+# #      Input('dropdown-select', 'value')],
+# #     state=[State('control-chart-live', 'figure')]
+# # )
+# def update_chart(interval, value, curr_fig):
+#     dff, count, mean, ucl, lcl, min, max = get_graph_stats(df, value)
+#
+#     if curr_fig['data'][0]['name'] != value:
+#         curr_fig['data'][0]['y'] = []
+#         curr_fig['data'][0]['x'] = []
+#
+#     layout = dict(title='Individual measurements', showlegend=True, xaxis={
+#         'zeroline': False,
+#         'title': 'Batch_Num',
+#         'showline': False
+#     }, yaxis={
+#         'title': value,
+#         'autorange': True
+#     }, annotations=[
+#         {'x': 2, 'y': lcl, 'xref': 'x', 'yref': 'y', 'text': 'LCL', 'showarrow': True},
+#     ], shapes=[
+#         {
+#             'type': 'line',
+#             'xref': 'x',
+#             'yref': 'y',
+#             'x0': 1,
+#             'y0': ucl,
+#             'x1': interval + 2,
+#             'y1': ucl,
+#             'line': {
+#                 'color': 'rgb(50, 171, 96)',
+#                 'width': 1,
+#                 'dash': 'dashdot'
+#             }
+#         },
+#         {
+#             'type': 'line',
+#             'xref': 'x',
+#             'yref': 'y',
+#             'x0': 1,
+#             'y0': mean,
+#             'x1': interval + 2,
+#             'y1': mean,
+#             'line': {
+#                 'color': 'rgb(255,127,80)',
+#                 'width': 2
+#             }
+#         },
+#         {
+#             'type': 'line',
+#             'xref': 'x',
+#             'yref': 'y',
+#             'x0': 1,
+#             'y0': lcl,
+#             'x1': interval + 2,
+#             'y1': lcl,
+#             'line': {
+#                 'color': 'rgb(50, 171, 96)',
+#                 'width': 1,
+#                 'dash': 'dashdot'
+#             }
+#         }
+#     ])
+#
+#     x_array = dff['Batch'].tolist()
+#     y_array = dff[value].tolist()
+#
+#     curr_fig['data'][0]['name'] = value
+#
+#     if len(curr_fig['data'][0]['x']) < count:
+#         curr_fig['data'][0]['x'].append(x_array[len(curr_fig['data'][0]['x'])])
+#         curr_fig['data'][0]['y'].append(y_array[len(curr_fig['data'][0]['y'])])
+#         curr_fig['layout'] = layout
+#
+#     return curr_fig
 
 
 # Running the server
