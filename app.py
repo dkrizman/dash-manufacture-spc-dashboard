@@ -337,16 +337,39 @@ def generate_metric_list():
             ooc_percentage = "%.2f" % (state_dict[col]['ooc'][total_count] * 100) + '%'
             return total_count, ooc_percentage
 
-        # # Update sparkline plot, count number, and count_ooc in Metrics
+        # Update sparkline plot in Metrics
         # Todo: remove states from state figure and re-make new one at each interval.
 
-        # @app.callback(output=Output(sparkline_graph_id, 'figure'),
-        #               inputs=[
-        #                   Input('interval-component', 'n_intervals')
-        #               ],
-        #               state=[
-        #                   State(sparkline_graph_id, 'figure')
-        #               ])
+        @app.callback(
+            output=Output(sparkline_graph_id, 'figure'),
+            inputs=[
+                Input('interval-component', 'n_intervals')
+            ],
+            state=[
+                State(item, 'children')
+            ]
+        )
+        def generate_sparkline_graph(interval, col):
+            if interval >= max_length:
+                total_count = max_length
+            else:
+                total_count = interval
+
+            x_array = state_dict['Batch']['data'].tolist()
+            y_array = state_dict[col]['data'].tolist()
+
+            new_fig = go.Figure(
+                {
+                'data': [{'x': x_array[:total_count], 'y': y_array[:total_count], 'mode': 'lines+markers', 'name': item}],
+                'layout': {
+                    'margin': dict(
+                        l=0, r=0, t=4, b=4, pad=0
+                    )
+                }
+            })
+
+            return new_fig
+
         # def generate_sparkline_graph(interval, curr_graph):
         #     col_name = curr_graph['data'][0]['name']
         #     x_array = state_dict['Batch']['data'].tolist()
