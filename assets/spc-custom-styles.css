@@ -59,10 +59,10 @@
   display: none;
 }
 
-.metric-row:hover{
-    background-color: #6c6c6c !important;
-    cursor: pointer;
-}
+/*.metric-row:hover{*/
+    /*background-color: #6c6c6c !important;*/
+    /*cursor: pointer;*/
+/*}*/
 
 #metric_list .svg-container .main-svg{
     height: 100% !important;

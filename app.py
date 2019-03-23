@@ -49,7 +49,7 @@ def generate_metric_row(id, style, col1, col2, col3, col4, col5, col6):
                 style={
                     'height': '100%',
                 },
-                className='five columns',
+                className='four columns',
                 children=col3['children']
             ),
             html.Div(
@@ -100,8 +100,14 @@ def create_callback(retfunc):
     return callback
 
 
-def generate_graph(interval, value, curr_fig):
-    stats = state_dict[value]
+def generate_graph(interval, value, fig):
+    col = fig['data'][0]['name']
+
+    if col != value:  # click
+        col = value
+    # else is interval
+
+    stats = state_dict[col]
     col_data = stats['data']
     count = stats['count']
     mean = stats['mean']
@@ -110,16 +116,21 @@ def generate_graph(interval, value, curr_fig):
     # minimum = stats['min']
     # maximum = stats['max']
 
-    # Clear figure if value changes
-    if curr_fig['data'][0]['name'] != value:
-        curr_fig['data'][0]['y'] = []
-        curr_fig['data'][0]['x'] = []
+    x_array = state_dict['Batch']['data'].tolist()
+    y_array = col_data.tolist()
+    fig['data'][0]['name'] = col
 
-    len_figure = len(curr_fig['data'][0]['x'])
+    if interval >= max_length:
+        total_count = max_length
+    else:
+        total_count = interval
 
-    # Todo: set range for y axis
+    fig['data'][0]['y'] = y_array[:total_count]
+    fig['data'][0]['x'] = x_array[:total_count]
 
-    layout = dict(title='Individual measurements', showlegend=True, xaxis={
+    len_figure = len(fig['data'][0]['x'])
+
+    fig['layout'] = dict(title='Individual measurements', showlegend=True, xaxis={
         'zeroline': False,
         'title': 'Batch_Num',
         'showline': False
@@ -175,17 +186,7 @@ def generate_graph(interval, value, curr_fig):
         }
     ])
 
-    x_array = state_dict['Batch']['data'].tolist()
-    y_array = col_data.tolist()
-
-    curr_fig['data'][0]['name'] = value
-
-    if len(curr_fig['data'][0]['x']) < count:
-        curr_fig['data'][0]['x'].append(x_array[len(curr_fig['data'][0]['x'])])
-        curr_fig['data'][0]['y'].append(y_array[len(curr_fig['data'][0]['y'])])
-        curr_fig['layout'] = layout
-
-    return curr_fig
+    return fig
 
 
 def generate_metric_list():
@@ -227,19 +228,23 @@ def generate_metric_list():
     for index in range(1, len(params)):
         item = params[index]
         # Add individual rows into input list
-        input_list.append(Input(item, 'n_clicks'))
+
+        button_id = item + '_param'
+        input_list.append(Input(button_id, 'n_clicks'))
 
         sparkline_graph_id = item + '_sparkline_graph'
         count_id = item + '_count'
         ooc_percentage_id = item + '_OOC_number'
         ooc_graph_id = item + '_OOC_graph'
-
         children.append(
             generate_metric_row(
                 item + "_row", None,
                 {
                     'id': item,
-                    'children': item
+                    'children': html.Button(
+                        id=button_id,
+                        children=item
+                    )
                 },
                 {
                     'id': count_id,
@@ -299,14 +304,6 @@ def generate_metric_list():
                             width=150,
                             margin=dict(l=5, r=0, t=0, b=0, pad=0),
                         )
-                        # go.Figure({
-                        #     # 'data': [{'x': [], 'y': [], 'mode': 'lines+markers', 'name': item, }],
-                        #     'layout': {
-                        #         'margin': dict(
-                        #             l=0, r=0, t=4, b=4, pad=0
-                        #         )
-                        #     }
-                        # })
                     )
                 },
                 {
@@ -326,7 +323,7 @@ def generate_metric_list():
                 Input('interval-component', 'n_intervals'),
             ],
             state=[
-                State(item, 'children')
+                State(button_id, 'children')
             ]
         )
         def update_count(interval, col):
@@ -338,7 +335,6 @@ def generate_metric_list():
             return total_count, ooc_percentage
 
         # Update sparkline plot in Metrics
-        # Todo: remove states from state figure and re-make new one at each interval.
 
         @app.callback(
             output=Output(sparkline_graph_id, 'figure'),
@@ -346,10 +342,11 @@ def generate_metric_list():
                 Input('interval-component', 'n_intervals')
             ],
             state=[
-                State(item, 'children')
+                State(button_id, 'children')
             ]
         )
         def generate_sparkline_graph(interval, col):
+
             if interval >= max_length:
                 total_count = max_length
             else:
@@ -360,39 +357,17 @@ def generate_metric_list():
 
             new_fig = go.Figure(
                 {
-                'data': [{'x': x_array[:total_count], 'y': y_array[:total_count], 'mode': 'lines+markers', 'name': item}],
-                'layout': {
-                    'margin': dict(
-                        l=0, r=0, t=4, b=4, pad=0
-                    )
+                    'data': [{'x': x_array[:total_count], 'y': y_array[:total_count], 'mode': 'lines+markers',
+                              'name': item}],
+                    'layout': {
+                        'margin': dict(
+                            l=0, r=0, t=4, b=4, pad=0
+                        )
+                    }
                 }
-            })
+            )
 
             return new_fig
-
-        # def generate_sparkline_graph(interval, curr_graph):
-        #     col_name = curr_graph['data'][0]['name']
-        #     x_array = state_dict['Batch']['data'].tolist()
-        #     y_array = state_dict[col_name]['data'].tolist()
-        #
-        #     if len(curr_graph['data'][0]['x']) < len(x_array):
-        #         curr_graph['data'][0]['x'].append(x_array[len(curr_graph['data'][0]['x'])])
-        #         curr_graph['data'][0]['y'].append(y_array[len(curr_graph['data'][0]['y'])])
-        #         # curr_graph['layout'] = layout
-        #
-        #     return curr_graph
-
-        #
-        # @app.callback(
-        #     output=Output(ooc_graph_id, 'figure'),
-        #     inputs=[
-        #         Input('interval-component', 'n_intervals'),
-        #     ],
-        # )
-        # def update_occ_2():
-        #     pass
-
-        # todo count_children, ooc_counts
 
         # TODO: Update OOC bullet plot
 
@@ -407,21 +382,6 @@ def generate_metric_list():
             children=children
         )
     )
-
-    # Update live-SPC chart upon click on metric row
-    def update_graph(*inputs):
-        click_state = inputs[-1]
-        interval = inputs[-3]
-        figure = inputs[-2]
-
-        if len(click_state) == 0:
-            return generate_graph(interval, params[8], figure), inputs[:-3]
-        for j in range(len(inputs) - 3):
-            if click_state[j] != inputs[j]:
-                return generate_graph(interval, params[j + 1], figure), inputs[:-3]
-
-        curr_fig = figure['data'][0]['name']
-        return generate_graph(interval, curr_fig, figure), inputs[:-3]
 
     input_list.append(Input('interval-component', 'n_intervals'))
     # app referencing the dash app object
@@ -438,6 +398,22 @@ def generate_metric_list():
         },
         children=metric_header_div
     )
+
+
+# Update live-SPC chart upon click on metric row
+def update_graph(*inputs):
+    click_state = inputs[-1]
+    interval = inputs[-3]
+    figure = inputs[-2]
+
+    if len(click_state) == 0:
+        return generate_graph(interval, params[3], figure), inputs[:-3]
+    for j in range(len(inputs) - 3):
+        if click_state[j] != inputs[j]:
+            return generate_graph(interval, params[j + 1], figure), inputs[:-3]
+
+    curr_fig = figure['data'][0]['name']
+    return generate_graph(interval, curr_fig, figure), inputs[:-3]
 
 
 def generate_tree_map():
@@ -465,7 +441,7 @@ def build_top_panel():
             # Metrics summary
             html.Div(
                 id='metric-summary-session',
-                className='six columns',
+                className='eight columns',
                 style={'height': '100%'},
                 children=[
                     generate_section_banner('Process Control Metrics Summary'),
@@ -483,7 +459,7 @@ def build_top_panel():
             # Tree Map
             html.Div(
                 id='treemap-session',
-                className='six columns',
+                className='four columns',
                 children=[
                     generate_section_banner('% OOC per Parameter'),
                     generate_tree_map()
@@ -509,14 +485,14 @@ def build_chart_panel():
 
             dcc.Interval(
                 id='interval-component',
-                interval=3 * 1000,  # in milliseconds
+                interval=5 * 1000,  # in milliseconds
                 n_intervals=0
             ),
 
             dcc.Graph(
                 id="control-chart-live",
                 figure=go.Figure({
-                    'data': [{'x': [], 'y': [], 'mode': 'lines+markers', 'name': 'Para4'}]
+                    'data': [{'x': [], 'y': [], 'mode': 'lines+markers', 'name': params[3]}]
                 }
                 )
             ),
