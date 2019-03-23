@@ -6,7 +6,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
 import plotly.graph_objs as go
-
+import dash_daq as daq
 import plotly.figure_factory as ff
 import squarify
 
@@ -24,7 +24,7 @@ max_length = len(df)
 def generate_metric_row(id, style, col1, col2, col3, col4, col5, col6):
     if style is None:
         style = {
-            'height': '100px',
+            'height': '50px',
             'width': '100%',
         }
     return html.Div(
@@ -120,8 +120,8 @@ def generate_graph(interval, value, fig):
     y_array = col_data.tolist()
     fig['data'][0]['name'] = col
 
-    if interval >= max_length:
-        total_count = max_length
+    if interval > max_length:
+        total_count = max_length - 1
     else:
         total_count = interval
 
@@ -236,6 +236,8 @@ def generate_metric_list():
         count_id = item + '_count'
         ooc_percentage_id = item + '_OOC_number'
         ooc_graph_id = item + '_OOC_graph'
+        indicator_id = item + '_indicator'
+
         children.append(
             generate_metric_row(
                 item + "_row", None,
@@ -243,7 +245,10 @@ def generate_metric_list():
                     'id': item,
                     'children': html.Button(
                         id=button_id,
-                        children=item
+                        children=item,
+                        style={
+                            'width':'100%',
+                        }
                     )
                 },
                 {
@@ -257,7 +262,6 @@ def generate_metric_list():
                         style={
                             'width': '100%',
                             'height': '95%',
-                            'border': '1px solid red'  # todo delete this
                         },
                         config={
                             'staticPlot': False,
@@ -283,8 +287,7 @@ def generate_metric_list():
                         id=ooc_graph_id,
                         style={
                             'width': '100%',
-                            'height': '95%',
-                            'border': '1px solid red'  # todo delete this
+                            'height': '95%'
                         },
                         config={
                             'staticPlot': False,
@@ -295,7 +298,7 @@ def generate_metric_list():
                             data=[{
                                 "label": "label",
                                 "range": [4, 7, 10],
-                                "performance": [0, 4],
+                                "performance": [0, 4]
                             }],
                             measures='performance',
                             ranges='range',
@@ -307,8 +310,12 @@ def generate_metric_list():
                     )
                 },
                 {
-                    'id': item + '_pf_' + str(index),
-                    'children': html.Div('aaa')
+                    'id': item + '_pf',
+                    'children': daq.Indicator(
+                        id=indicator_id,
+                        value=True,
+                        color='#00cc96'
+                    )
                 },
             ))
 
@@ -317,7 +324,8 @@ def generate_metric_list():
             output=[
                 Output(count_id, 'children'),
                 Output(ooc_percentage_id, 'children'),
-                # Output(ooc_graph_id, 'figure')
+                Output(ooc_graph_id, 'figure'),
+                Output(indicator_id, 'color')
             ],
             inputs=[
                 Input('interval-component', 'n_intervals'),
@@ -328,11 +336,36 @@ def generate_metric_list():
         )
         def update_count(interval, col):
             if interval >= max_length:
-                total_count = max_length
+                total_count = max_length -1
             else:
                 total_count = interval
-            ooc_percentage = "%.2f" % (state_dict[col]['ooc'][total_count] * 100) + '%'
-            return total_count, ooc_percentage
+            ooc_percentage_f = state_dict[col]['ooc'][total_count] * 100
+            ooc_percentage_str = "%.2f" % ooc_percentage_f + '%'
+
+            if ooc_percentage_f > 10:
+                ooc_percentage_f = 10
+
+            ooc_fig = ff.create_bullet(
+                data=[{
+                    "label": "label",
+                    "range": [4, 7, 10],
+                    "performance": [0, ooc_percentage_f],
+                }],
+                measures='performance',
+                ranges='range',
+                titles='label',
+                height=50,
+                width=150,
+                margin=dict(l=5, r=0, t=0, b=0, pad=0),
+                font={'size': 1},
+                measure_colors=['rgb(0,0,0)', 'rgb(0,0,0)'],
+                range_colors=['rgb(152,251,152)', 'rgb(250,128,114)'],
+            )
+            color = '#00cc96'
+            if ooc_percentage_f > 7:
+                color = '#FF0000'
+
+            return total_count, ooc_percentage_str, ooc_fig, color
 
         # Update sparkline plot in Metrics
 
@@ -348,28 +381,24 @@ def generate_metric_list():
         def generate_sparkline_graph(interval, col):
 
             if interval >= max_length:
-                total_count = max_length
+                total_count = max_length - 1
             else:
                 total_count = interval
 
             x_array = state_dict['Batch']['data'].tolist()
             y_array = state_dict[col]['data'].tolist()
 
-            new_fig = go.Figure(
-                {
-                    'data': [{'x': x_array[:total_count], 'y': y_array[:total_count], 'mode': 'lines+markers',
-                              'name': item}],
-                    'layout': {
-                        'margin': dict(
-                            l=0, r=0, t=4, b=4, pad=0
-                        )
-                    }
+            new_fig = go.Figure({
+                'data': [{'x': x_array[:total_count], 'y': y_array[:total_count], 'mode': 'lines+markers',
+                          'name': item}],
+                'layout': {
+                    'margin': dict(
+                        l=0, r=0, t=4, b=4, pad=0
+                    )
                 }
-            )
+            })
 
             return new_fig
-
-        # TODO: Update OOC bullet plot
 
         # TODO: Update Pass/Fail
 
@@ -485,7 +514,7 @@ def build_chart_panel():
 
             dcc.Interval(
                 id='interval-component',
-                interval=5 * 1000,  # in milliseconds
+                interval=1 * 1000,  # in milliseconds
                 n_intervals=0
             ),
 
