@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 
 import dash
 import dash_core_components as dcc
@@ -17,7 +18,7 @@ app = dash.Dash(__name__)
 app.scripts.config.serve_locally = True
 app.config['suppress_callback_exceptions'] = True
 
-params = list(df)[2:8]
+params = list(df)
 max_length = len(df)
 
 
@@ -479,6 +480,7 @@ def update_graph(*inputs):
 
 # default_treemap
 def generate_default_treemap(batch_num):
+
     x = 0.
     y = 0.
     width = 100.
@@ -489,6 +491,7 @@ def generate_default_treemap(batch_num):
         size_of_rect = (state_dict[param]['ooc'][batch_num]*100) + 1
         values.append(size_of_rect)
 
+
     normed = squarify.normalize_sizes(values, width, height)
     rects = squarify.squarify(normed, x, y, width, height)
 
@@ -497,6 +500,7 @@ def generate_default_treemap(batch_num):
     shapes = []
     annotations = []
     counter = 0
+
 
     for r in rects:
         shapes.append(
@@ -522,6 +526,8 @@ def generate_default_treemap(batch_num):
         if counter >= len(color_brewer):
             counter = 0
 
+    t = time.time()
+
     # For hover text
     trace0 = go.Scatter(
         x=[r['x'] + (r['dx'] / 2) for r in rects],
@@ -541,6 +547,8 @@ def generate_default_treemap(batch_num):
         hovermode='closest',
         config=dict(displayModeBar=False)
     )
+    print(time.time()-t)
+
 
     return trace0, layout
 
@@ -627,7 +635,7 @@ def build_chart_panel():
 
             dcc.Interval(
                 id='interval-component',
-                interval=1 * 1000,  # in milliseconds
+                interval=5 * 1000,  # in milliseconds
                 n_intervals=0
             ),
 
