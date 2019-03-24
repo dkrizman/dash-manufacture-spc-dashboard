@@ -17,14 +17,14 @@ app = dash.Dash(__name__)
 app.scripts.config.serve_locally = True
 app.config['suppress_callback_exceptions'] = True
 
-params = list(df)
+params = list(df)[2:8]
 max_length = len(df)
 
 
 def generate_metric_row(id, style, col1, col2, col3, col4, col5, col6):
     if style is None:
         style = {
-            'height': '50px',
+            'height': '100px',
             'width': '100%',
         }
     return html.Div(
@@ -481,8 +481,8 @@ def update_graph(*inputs):
 def generate_default_treemap(batch_num):
     x = 0.
     y = 0.
-    width = 75.
-    height = 75.
+    width = 100.
+    height = 100.
 
     values = []
     for param in params[1:]:
@@ -578,7 +578,6 @@ def build_top_panel():
         id='top-section-container',
         className='row',
         style={
-            'height': '45vh'
         },
         children=[
             # Metrics summary
@@ -593,7 +592,7 @@ def build_top_panel():
                         style={
                             'height': '100%',
                             'width': '100%',
-                            'width': '100%',
+                            'margin': '10px 5px'
                         },
                         children=generate_metric_list()
                     )

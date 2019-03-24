@@ -33,7 +33,7 @@
 }
 
 .section-banner {
-    background-color:#E1FFFF;
+    background-color:#F5F5F5;
     color: #2a3f5f;
     text-align: center;
     font-weight: bold;
@@ -58,11 +58,6 @@
 ._dash-undo-redo {
   display: none;
 }
-
-/*.metric-row:hover{*/
-    /*background-color: #6c6c6c !important;*/
-    /*cursor: pointer;*/
-/*}*/
 
 #metric_list .svg-container .main-svg{
     height: 100% !important;

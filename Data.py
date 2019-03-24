@@ -27,8 +27,13 @@ def init_df():
         data = df[col]
         stats = data.describe()
 
+        std = stats['std'].tolist()
         ucl = (stats['mean'] + 3 * stats['std']).tolist()
         lcl = (stats['mean'] - 3 * stats['std']).tolist()
+
+        usl = ucl + std
+        lsl = lcl - std
+
         ret.update({
             col: {
                 'count': stats['count'].tolist(),
@@ -36,6 +41,8 @@ def init_df():
                 'mean': stats['mean'].tolist(),
                 'ucl': ucl,
                 'lcl': lcl,
+                'usl': usl,
+                'lsl': lsl,
                 'min:': stats['min'].tolist(),
                 'max': stats['max'].tolist(),
                 'ooc': populate_ooc(col)

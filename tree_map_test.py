@@ -94,12 +94,7 @@ ooc_bullet_df = pd.read_csv("ooc_percentage.csv")
 para4_ooc = ooc_bullet_df['Para4']
 print(para4_ooc)
 
-data = {
-    "range": [5, 10, 100],  # 3-item list [bad, okay, good].
-    "performance":
-    "measures":
 
-}
 # skip points
 fig2 = ff.create_bullet(
     data, markers='point',
