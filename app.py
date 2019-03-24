@@ -362,7 +362,7 @@ def generate_metric_list():
                 range_colors=['rgb(152,251,152)', 'rgb(250,128,114)'],
             )
             color = '#00cc96'
-            if ooc_percentage_f > 7:
+            if ooc_percentage_f > 5:
                 color = '#FF0000'
 
             return total_count, ooc_percentage_str, ooc_fig, color
@@ -524,17 +524,17 @@ def build_chart_panel():
                     'data': [{'x': [], 'y': [], 'mode': 'lines+markers', 'name': params[3]}]
                 }
                 )
-            ),
+            )
 
             # TODO: add real-time dash-daq alerts
 
-            dcc.Graph(
-                id="moving-range",
-                figure=go.Figure({
-                    'data': [{'x': [], 'y': [], 'mode': 'lines+markers'}]
-                }
-                )
-            )
+            # dcc.Graph(
+            #     id="moving-range",
+            #     figure=go.Figure({
+            #         'data': [{'x': [], 'y': [], 'mode': 'lines+markers'}]
+            #     }
+            #     )
+            # )
         ]
     )
 
@@ -575,6 +575,14 @@ app.layout = html.Div(
                 html.Div(id='test-update', children='test'),
                 build_top_panel(),
                 build_chart_panel(),
+                daq.LEDDisplay(
+                    id = 'operator-id',
+                    value = '2701'
+                ),
+                daq.LEDDisplay(
+                    id = 'batch_num',
+                    value = '620'
+                )
             ]
         )
     ]
