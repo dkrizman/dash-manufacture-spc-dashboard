@@ -113,6 +113,8 @@ def generate_graph(interval, value, fig):
     mean = stats['mean']
     ucl = stats['ucl']
     lcl = stats['lcl']
+    usl = stats['usl']
+    lsl = stats['lsl']
     # minimum = stats['min']
     # maximum = stats['max']
 
@@ -142,7 +144,39 @@ def generate_graph(interval, value, fig):
          'showarrow': True},
         {'x': len_figure + 2, 'y': ucl, 'xref': 'x', 'yref': 'y', 'text': 'UCL: ' + str(round(ucl, 2)),
          'showarrow': True},
+        {'x': len_figure + 2, 'y': usl, 'xref': 'x', 'yref': 'y', 'text': 'USL: ' + str(round(usl, 2)),
+         'showarrow': True},
+        {'x': len_figure + 2, 'y': lsl, 'xref': 'x', 'yref': 'y', 'text': 'LSL: ' + str(round(lsl, 2)),
+         'showarrow': True}
     ], shapes=[
+        {
+            'type': 'line',
+            'xref': 'x',
+            'yref': 'y',
+            'x0': 1,
+            'y0': usl,
+            'x1': len_figure + 2,
+            'y1': usl,
+            'line': {
+                'color': 'rgb(50, 171, 96)',
+                'width': 1,
+                'dash': 'dashdot'
+            }
+        },
+        {
+            'type': 'line',
+            'xref': 'x',
+            'yref': 'y',
+            'x0': 1,
+            'y0': lsl,
+            'x1': len_figure + 2,
+            'y1': lsl,
+            'line': {
+                'color': 'rgb(50, 171, 96)',
+                'width': 1,
+                'dash': 'dashdot'
+            }
+        },
         {
             'type': 'line',
             'xref': 'x',
@@ -152,7 +186,7 @@ def generate_graph(interval, value, fig):
             'x1': len_figure + 2,
             'y1': ucl,
             'line': {
-                'color': 'rgb(50, 171, 96)',
+                'color': 'rgb(255,127,80)',
                 'width': 1,
                 'dash': 'dashdot'
             }
@@ -179,7 +213,7 @@ def generate_graph(interval, value, fig):
             'x1': len_figure + 2,
             'y1': lcl,
             'line': {
-                'color': 'rgb(50, 171, 96)',
+                'color': 'rgb(255,127,80)',
                 'width': 1,
                 'dash': 'dashdot'
             }
@@ -247,7 +281,7 @@ def generate_metric_list():
                         id=button_id,
                         children=item,
                         style={
-                            'width':'100%',
+                            'width': '100%',
                         }
                     )
                 },
@@ -336,7 +370,7 @@ def generate_metric_list():
         )
         def update_count(interval, col):
             if interval >= max_length:
-                total_count = max_length -1
+                total_count = max_length - 1
             else:
                 total_count = interval
             ooc_percentage_f = state_dict[col]['ooc'][total_count] * 100
@@ -400,8 +434,6 @@ def generate_metric_list():
 
             return new_fig
 
-        # TODO: Update Pass/Fail
-
     metric_header_div.append(
         html.Div(
             style={
@@ -445,18 +477,100 @@ def update_graph(*inputs):
     return generate_graph(interval, curr_fig, figure), inputs[:-3]
 
 
+# default_treemap
+def generate_default_treemap(batch_num):
+    x = 0.
+    y = 0.
+    width = 75.
+    height = 75.
+
+    values = []
+    for param in params[1:]:
+        size_of_rect = (state_dict[param]['ooc'][batch_num]*100) + 1
+        values.append(size_of_rect)
+
+    normed = squarify.normalize_sizes(values, width, height)
+    rects = squarify.squarify(normed, x, y, width, height)
+
+    color_brewer = ['rgb(75,103,144)', 'rgb(101,123,159)', 'rgb(127,143,175)', 'rgb(152,165,191)', 'rgb(177,187,206)',
+                    'rgb(203,209,222)']
+    shapes = []
+    annotations = []
+    counter = 0
+
+    for r in rects:
+        shapes.append(
+            dict(
+                type='rect',
+                x0=r['x'],
+                y0=r['y'],
+                x1=r['x'] + r['dx'],
+                y1=r['y'] + r['dy'],
+                line=dict(width=1),
+                fillcolor=color_brewer[counter]
+            )
+        )
+        annotations.append(
+            dict(
+                x=r['x'] + (r['dx'] / 2),
+                y=r['y'] + (r['dy'] / 2),
+                text=params[1:][counter],
+                showarrow=False
+            )
+        )
+        counter = counter + 1
+        if counter >= len(color_brewer):
+            counter = 0
+
+    # For hover text
+    trace0 = go.Scatter(
+        x=[r['x'] + (r['dx'] / 2) for r in rects],
+        y=[r['y'] + (r['dy'] / 2) for r in rects],
+        text=[str(v) for v in params[1:]],
+        mode='text',
+    )
+
+    layout = dict(
+        height=400,
+        width=500,
+        margin=dict(l=0, r=0, t=10, b=0),
+        xaxis=dict(showgrid=False, zeroline=False),
+        yaxis=dict(showgrid=False, zeroline=False),
+        shapes=shapes,
+        annotations=annotations,
+        hovermode='closest',
+        config=dict(displayModeBar=False)
+    )
+
+    return trace0, layout
+
+
+
 def generate_tree_map():
     return html.Div(
-        children=[
-            html.Label(
-                id='test_label',
-                children="0"
-            ),
-            dcc.Store(
-                id='click_state',
-                data=[]
-            ),
-        ])
+        id='treemap-container',
+        style={'padding': '10px 0px'},
+        children=dcc.Graph(
+            id='treemap',
+            figure=dict(data=[generate_default_treemap(0)[0]], layout=generate_default_treemap(0)[1])
+        )
+    )
+
+
+@app.callback(
+    output=Output('treemap', 'figure'),
+    inputs=[
+        Input('interval-component', 'n_intervals')]
+)
+def update_treemap(interval):
+    if interval >= max_length:
+        total_count = max_length - 1
+    else:
+        total_count = interval
+
+    new_fig = dict(data=[generate_default_treemap(total_count)[0]], layout=generate_default_treemap(total_count)[1])
+    return new_fig
+
 
 
 def build_top_panel():
@@ -576,12 +690,16 @@ app.layout = html.Div(
                 build_top_panel(),
                 build_chart_panel(),
                 daq.LEDDisplay(
-                    id = 'operator-id',
-                    value = '2701'
+                    id='operator-id',
+                    value='2701'
                 ),
                 daq.LEDDisplay(
-                    id = 'batch_num',
-                    value = '620'
+                    id='batch_num',
+                    value='620'
+                ),
+                dcc.Store(
+                    id='click_state',
+                    data=[]
                 )
             ]
         )
