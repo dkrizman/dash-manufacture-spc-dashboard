@@ -1,6 +1,6 @@
 import pandas as pd
 
-df = pd.read_csv("data/spc_data_full.csv")  # 653 * 28 col
+df = pd.read_csv("data/spc_data.csv")  # 653 * 28 col
 
 
 def populate_ooc(col):

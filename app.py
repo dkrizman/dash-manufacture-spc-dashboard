@@ -14,7 +14,7 @@ import squarify
 from Data import df, state_dict, populate_ooc
 
 app = dash.Dash(__name__)
-# server = app.server
+server = app.server
 app.scripts.config.serve_locally = True
 app.config['suppress_callback_exceptions'] = True
 
@@ -435,6 +435,7 @@ def generate_metric_list():
 
             return new_fig
 
+
     metric_header_div.append(
         html.Div(
             style={
@@ -491,12 +492,15 @@ def generate_default_treemap(batch_num):
         size_of_rect = (state_dict[param]['ooc'][batch_num]*100) + 1
         values.append(size_of_rect)
 
-
     normed = squarify.normalize_sizes(values, width, height)
     rects = squarify.squarify(normed, x, y, width, height)
 
     color_brewer = ['rgb(75,103,144)', 'rgb(101,123,159)', 'rgb(127,143,175)', 'rgb(152,165,191)', 'rgb(177,187,206)',
                     'rgb(203,209,222)']
+
+    #TODO: colormap for rect
+
+
     shapes = []
     annotations = []
     counter = 0
@@ -547,8 +551,7 @@ def generate_default_treemap(batch_num):
         hovermode='closest',
         config=dict(displayModeBar=False)
     )
-    print(time.time()-t)
-
+    # print(time.time()-t)
 
     return trace0, layout
 
@@ -586,6 +589,7 @@ def build_top_panel():
         id='top-section-container',
         className='row',
         style={
+            'height': '45vh'
         },
         children=[
             # Metrics summary
@@ -635,7 +639,7 @@ def build_chart_panel():
 
             dcc.Interval(
                 id='interval-component',
-                interval=5 * 1000,  # in milliseconds
+                interval=1 * 1000,  # in milliseconds
                 n_intervals=0
             ),
 
@@ -646,16 +650,6 @@ def build_chart_panel():
                 }
                 )
             )
-
-            # TODO: add real-time dash-daq alerts
-
-            # dcc.Graph(
-            #     id="moving-range",
-            #     figure=go.Figure({
-            #         'data': [{'x': [], 'y': [], 'mode': 'lines+markers'}]
-            #     }
-            #     )
-            # )
         ]
     )
 
@@ -696,14 +690,14 @@ app.layout = html.Div(
                 html.Div(id='test-update', children='test'),
                 build_top_panel(),
                 build_chart_panel(),
-                daq.LEDDisplay(
-                    id='operator-id',
-                    value='2701'
-                ),
-                daq.LEDDisplay(
-                    id='batch_num',
-                    value='620'
-                ),
+                # daq.LEDDisplay(
+                #     id='operator-id',
+                #     value='2701'
+                # ),
+                # daq.LEDDisplay(
+                #     id='batch_num',
+                #     value='620'
+                # ),
                 dcc.Store(
                     id='click_state',
                     data=[]
@@ -712,86 +706,6 @@ app.layout = html.Div(
         )
     ]
 )
-
-# # Live SPC updates by Batch_Num
-# # @app.callback(
-# #     Output('control-chart-live', 'figure'),
-# #     [Input('interval-component', 'n_intervals'),
-# #      Input('dropdown-select', 'value')],
-# #     state=[State('control-chart-live', 'figure')]
-# # )
-# def update_chart(interval, value, curr_fig):
-#     dff, count, mean, ucl, lcl, min, max = get_graph_stats(df, value)
-#
-#     if curr_fig['data'][0]['name'] != value:
-#         curr_fig['data'][0]['y'] = []
-#         curr_fig['data'][0]['x'] = []
-#
-#     layout = dict(title='Individual measurements', showlegend=True, xaxis={
-#         'zeroline': False,
-#         'title': 'Batch_Num',
-#         'showline': False
-#     }, yaxis={
-#         'title': value,
-#         'autorange': True
-#     }, annotations=[
-#         {'x': 2, 'y': lcl, 'xref': 'x', 'yref': 'y', 'text': 'LCL', 'showarrow': True},
-#     ], shapes=[
-#         {
-#             'type': 'line',
-#             'xref': 'x',
-#             'yref': 'y',
-#             'x0': 1,
-#             'y0': ucl,
-#             'x1': interval + 2,
-#             'y1': ucl,
-#             'line': {
-#                 'color': 'rgb(50, 171, 96)',
-#                 'width': 1,
-#                 'dash': 'dashdot'
-#             }
-#         },
-#         {
-#             'type': 'line',
-#             'xref': 'x',
-#             'yref': 'y',
-#             'x0': 1,
-#             'y0': mean,
-#             'x1': interval + 2,
-#             'y1': mean,
-#             'line': {
-#                 'color': 'rgb(255,127,80)',
-#                 'width': 2
-#             }
-#         },
-#         {
-#             'type': 'line',
-#             'xref': 'x',
-#             'yref': 'y',
-#             'x0': 1,
-#             'y0': lcl,
-#             'x1': interval + 2,
-#             'y1': lcl,
-#             'line': {
-#                 'color': 'rgb(50, 171, 96)',
-#                 'width': 1,
-#                 'dash': 'dashdot'
-#             }
-#         }
-#     ])
-#
-#     x_array = dff['Batch'].tolist()
-#     y_array = dff[value].tolist()
-#
-#     curr_fig['data'][0]['name'] = value
-#
-#     if len(curr_fig['data'][0]['x']) < count:
-#         curr_fig['data'][0]['x'].append(x_array[len(curr_fig['data'][0]['x'])])
-#         curr_fig['data'][0]['y'].append(y_array[len(curr_fig['data'][0]['y'])])
-#         curr_fig['layout'] = layout
-#
-#     return curr_fig
-
 
 # Running the server
 if __name__ == '__main__':
