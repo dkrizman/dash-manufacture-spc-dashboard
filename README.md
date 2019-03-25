@@ -11,7 +11,7 @@ This is a demo of Dash interactive Python framework developed by [Plotly](https/
 * [Dash DAQ](dashdaq.io) - styled technical components for industrial applications
 
 ## Requirements
-We suggest you to create a separate virtual environment running Python 3 for this app, and install all of the required dependencies there. Run in Terminal/Command Promtp:
+We suggest you to create a separate virtual environment running Python 3 for this app, and install all of the required dependencies there. Run in Terminal/Command Prompt:
 
 ```
 git clone https://github.com/plotly/dash-manufacture-spc-dashboard.git
