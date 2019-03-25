@@ -21,6 +21,258 @@ app.config['suppress_callback_exceptions'] = True
 params = list(df)
 max_length = len(df)
 
+suffix_row = '_row'
+suffix_button_id = '_button'
+suffix_sparkline_graph = '_sparkline_graph'
+suffix_count = '_count'
+suffix_ooc_n = '_OOC_number'
+suffix_ooc_g = '_OOC_graph'
+suffix_indicator = '_indicator'
+
+
+#  todo create a list of config
+
+
+def root_layout():
+    app.layout = html.Div(
+        children=[
+            # Banner
+            html.Div(
+                id='banner',
+                className="banner", children=[
+                    html.H5('Manufacturing SPC Dashboard - Process Control and Exception Reporting'),
+                    html.Img(
+                        src="https://s3-us-west-1.amazonaws.com/plotly-tutorials/logo/new-branding/dash-logo-by-plotly-stripe-inverted.png"
+                    )
+                ]
+            ),
+
+            # Tabs
+            html.Div(
+                id='tab-bar',
+                children=[
+                    dcc.Tabs(
+                        id="tabs",
+                        value="tab-2",
+                        children=[
+                            dcc.Tab(label='What is SPC?', value='tab-1'),
+                            dcc.Tab(label='Control Chart Dashboard 1', value='tab-2'),
+                            dcc.Tab(label='Control Chart Dashboard 2', value='tab-3'),
+                        ]
+                    )
+                ]
+            ),
+            # Main app
+            html.Div(
+                id='tabs-content',
+                className='container scalable',
+                children=[
+                    build_top_panel(),
+                    build_chart_panel(),
+                ]
+            )
+        ]
+    )
+
+
+def generate_section_banner(title):
+    return html.Div(
+        className="section-banner",
+        children=title,
+    )
+
+
+def build_top_panel():
+    return html.Div(
+        id='top-section-container',
+        className='row',
+        style={
+            'height': '45vh'
+        },
+        children=[
+            # Metrics summary
+            html.Div(
+                id='metric-summary-session',
+                className='eight columns',
+                style={'height': '100%'},
+                children=[
+                    generate_section_banner('Process Control Metrics Summary'),
+                    generate_metric_list_header(),
+                    html.Div(
+                        # id='metric_div',
+                        style={
+                            'height': 'calc(100% - 60px)',
+                            'width': '100%',
+                            'overflow': 'scroll'
+                        },
+                        children=[
+                            generate_para1_row(),
+                            generate_para2_row(),
+                            generate_para3_row(),
+                            generate_para4_row(),
+                            generate_para5_row()
+                        ]
+                    )
+                ]
+            ),
+            # Tree Map
+            html.Div(
+                id='treemap-session',
+                className='four columns',
+                children=[
+                    generate_section_banner('% OOC per Parameter'),
+                    generate_tree_map()
+                ]
+            )
+        ]
+    )
+
+
+# Build header
+def generate_metric_list_header():
+    return generate_metric_row(
+        'metric_header',
+        {
+            'height': '30px'
+        },
+        {
+            'id': "m_header_1",
+            'children': html.Div("Parameter")
+        },
+        {
+            'id': "m_header_2",
+            'children': html.Div("Count")
+        },
+        {
+            'id': "m_header_3",
+            'children': html.Div("Sparkline")
+        },
+        {
+            'id': "m_header_4",
+            'children': html.Div("OOC%")
+        },
+        {
+            'id': "m_header_5",
+            'children': html.Div("%OOC")
+        },
+        {
+            'id': "m_header_6",
+            'children': html.Div("P/F")
+        })
+
+
+def generate_para1_row():
+    return generate_metric_row_helper(1)
+
+
+def generate_para2_row():
+    return generate_metric_row_helper(2)
+
+
+def generate_para3_row():
+    return generate_metric_row_helper(3)
+
+
+def generate_para4_row():
+    return generate_metric_row_helper(4)
+
+
+def generate_para5_row():
+    return generate_metric_row_helper(5)
+
+
+def generate_metric_row_helper(index):
+    item = params[index]
+
+    div_id = item + suffix_row
+    button_id = item + suffix_button_id
+    sparkline_graph_id = item + suffix_sparkline_graph
+    count_id = item + suffix_count
+    ooc_percentage_id = item + suffix_ooc_n
+    ooc_graph_id = item + suffix_ooc_g
+    indicator_id = item + suffix_indicator
+
+    return generate_metric_row(
+        div_id, None,
+        {
+            'id': item,
+            'children': html.Button(
+                id=button_id,
+                children=item,
+                n_clicks_timestamp=0,
+                style={
+                    'width': '100%',
+                }
+            )
+        },
+        {
+            'id': count_id,
+            'children': '0'
+        },
+        {
+            'id': item + '_sparkline',
+            'children': dcc.Graph(
+                id=sparkline_graph_id,
+                style={
+                    'width': '100%',
+                    'height': '95%',
+                },
+                config={
+                    'staticPlot': False,
+                    'editable': False,
+                    'displayModeBar': False
+                },
+                figure=go.Figure({
+                    'data': [{'x': [], 'y': [], 'mode': 'lines+markers', 'name': item, }],
+                    'layout': {
+                        'margin': dict(
+                            l=0, r=0, t=4, b=4, pad=0
+                        )
+                    }
+                }))
+        },
+        {
+            'id': ooc_percentage_id,
+            'children': '0.00%'
+        },
+        {
+            'id': ooc_graph_id + '_container',
+            'children': dcc.Graph(
+                id=ooc_graph_id,
+                style={
+                    'width': '100%',
+                    'height': '95%'
+                },
+                config={
+                    'staticPlot': False,
+                    'editable': False,
+                    'displayModeBar': False
+                },
+                figure=ff.create_bullet(
+                    data=[{
+                        "label": "label",
+                        "range": [4, 7, 10],
+                        "performance": [0, 4]
+                    }],
+                    measures='performance',
+                    ranges='range',
+                    titles='label',
+                    height=50,
+                    width=150,
+                    margin=dict(l=5, r=0, t=0, b=0, pad=0),
+                )
+            )
+        },
+        {
+            'id': item + '_pf',
+            'children': daq.Indicator(
+                id=indicator_id,
+                value=True,
+                color='#00cc96'
+            )
+        }
+    )
+
 
 def generate_metric_row(id, style, col1, col2, col3, col4, col5, col6):
     if style is None:
@@ -78,6 +330,34 @@ def generate_metric_row(id, style, col1, col2, col3, col4, col5, col6):
     )
 
 
+def build_chart_panel():
+    return html.Div(
+        id='control-chart-container',
+        className='twelve columns',
+        children=[
+            generate_section_banner('Live SPC Chart'),
+
+            dcc.Interval(
+                id='interval-component',
+                interval=2 * 1000,  # in milliseconds
+                n_intervals=0
+            ),
+
+            dcc.Store(
+                id='control-chart-state',
+                data=params[1]
+            ),
+            dcc.Graph(
+                id="control-chart-live",
+                figure=go.Figure({
+                    'data': [{'x': [], 'y': [], 'mode': 'lines+markers', 'name': params[3]}]
+                }
+                )
+            )
+        ]
+    )
+
+
 def create_callback(retfunc):
     """
     pass *input_value to retfunc
@@ -101,11 +381,11 @@ def create_callback(retfunc):
     return callback
 
 
-def generate_graph(interval, value, fig):
-    col = fig['data'][0]['name']
+def generate_graph(interval, col):
+    # col = fig['data'][0]['name']
 
-    if col != value:  # click
-        col = value
+    # if col != value:  # click
+    #     col = value
     # else is interval
 
     stats = state_dict[col]
@@ -121,15 +401,19 @@ def generate_graph(interval, value, fig):
 
     x_array = state_dict['Batch']['data'].tolist()
     y_array = col_data.tolist()
-    fig['data'][0]['name'] = col
+    # fig['data'][0]['name'] = col
 
     if interval > max_length:
         total_count = max_length - 1
     else:
         total_count = interval
+    fig = {
+        'data': [{
+            'x': x_array[:total_count],
+            'y': y_array[:total_count],
+            'name': col}],
 
-    fig['data'][0]['y'] = y_array[:total_count]
-    fig['data'][0]['x'] = x_array[:total_count]
+    }
 
     len_figure = len(fig['data'][0]['x'])
 
@@ -138,7 +422,7 @@ def generate_graph(interval, value, fig):
         'title': 'Batch_Num',
         'showline': False
     }, yaxis={
-        'title': value,
+        'title': col,
         'autorange': True
     }, annotations=[
         {'x': len_figure + 2, 'y': lcl, 'xref': 'x', 'yref': 'y', 'text': 'LCL:' + str(round(lcl, 2)),
@@ -224,259 +508,175 @@ def generate_graph(interval, value, fig):
     return fig
 
 
-def generate_metric_list():
-    # Build header
-    metric_header_div = [
-        generate_metric_row(
-            'metric_header',
-            {
-                'height': '50px'
-            },
-            {
-                'id': "m_header_1",
-                'children': html.Div("Parameter")
-            },
-            {
-                'id': "m_header_2",
-                'children': html.Div("Count")
-            },
-            {
-                'id': "m_header_3",
-                'children': html.Div("Sparkline")
-            },
-            {
-                'id': "m_header_4",
-                'children': html.Div("OOC%")
-            },
-            {
-                'id': "m_header_5",
-                'children': html.Div("%OOC")
-            },
-            {
-                'id': "m_header_6",
-                'children': html.Div("P/F")
-            }),
-    ]
+#  ======= update each row at interval =========
+@app.callback(
+    output=[
+        Output('Para1'+suffix_count, 'children'),
+        Output('Para1'+suffix_sparkline_graph, 'figure'),
+        Output('Para1'+suffix_ooc_n, 'children'),
+        Output('Para1'+suffix_ooc_g, 'figure'),
+        Output('Para1'+suffix_indicator, 'color')
+    ],
+    inputs=[Input('interval-component', 'n_intervals')],
+)
+def update_param1_row(interval):
+    count, ooc_n, ooc_g, indicator = update_count(interval, 'Para1')
+    spark_line_graph = update_spark_line_graph(interval, 'Para1')
+    return count, spark_line_graph, ooc_n, ooc_g, indicator
 
-    input_list = []
-    children = []
-    for index in range(1, len(params)):
-        item = params[index]
-        # Add individual rows into input list
 
-        button_id = item + '_param'
-        input_list.append(Input(button_id, 'n_clicks'))
+@app.callback(
+    output=[
+        Output('Para2'+suffix_count, 'children'),
+        Output('Para2'+suffix_sparkline_graph, 'figure'),
+        Output('Para2'+suffix_ooc_n, 'children'),
+        Output('Para2'+suffix_ooc_g, 'figure'),
+        Output('Para2'+suffix_indicator, 'color')
+    ],
+    inputs=[Input('interval-component', 'n_intervals')],
+)
+def update_param1_row(interval):
+    count, ooc_n, ooc_g, indicator = update_count(interval, 'Para2')
+    spark_line_graph = update_spark_line_graph(interval, 'Para2')
+    return count, spark_line_graph, ooc_n, ooc_g, indicator
 
-        sparkline_graph_id = item + '_sparkline_graph'
-        count_id = item + '_count'
-        ooc_percentage_id = item + '_OOC_number'
-        ooc_graph_id = item + '_OOC_graph'
-        indicator_id = item + '_indicator'
 
-        children.append(
-            generate_metric_row(
-                item + "_row", None,
-                {
-                    'id': item,
-                    'children': html.Button(
-                        id=button_id,
-                        children=item,
-                        style={
-                            'width': '100%',
-                        }
-                    )
-                },
-                {
-                    'id': count_id,
-                    'children': '0'
-                },
-                {
-                    'id': item + '_sparkline',
-                    'children': dcc.Graph(
-                        id=sparkline_graph_id,
-                        style={
-                            'width': '100%',
-                            'height': '95%',
-                        },
-                        config={
-                            'staticPlot': False,
-                            'editable': False,
-                            'displayModeBar': False
-                        },
-                        figure=go.Figure({
-                            'data': [{'x': [], 'y': [], 'mode': 'lines+markers', 'name': item, }],
-                            'layout': {
-                                'margin': dict(
-                                    l=0, r=0, t=4, b=4, pad=0
-                                )
-                            }
-                        }))
-                },
-                {
-                    'id': ooc_percentage_id,
-                    'children': '0.00%'
-                },
-                {
-                    'id': ooc_graph_id + '_container',
-                    'children': dcc.Graph(
-                        id=ooc_graph_id,
-                        style={
-                            'width': '100%',
-                            'height': '95%'
-                        },
-                        config={
-                            'staticPlot': False,
-                            'editable': False,
-                            'displayModeBar': False
-                        },
-                        figure=ff.create_bullet(
-                            data=[{
-                                "label": "label",
-                                "range": [4, 7, 10],
-                                "performance": [0, 4]
-                            }],
-                            measures='performance',
-                            ranges='range',
-                            titles='label',
-                            height=50,
-                            width=150,
-                            margin=dict(l=5, r=0, t=0, b=0, pad=0),
-                        )
-                    )
-                },
-                {
-                    'id': item + '_pf',
-                    'children': daq.Indicator(
-                        id=indicator_id,
-                        value=True,
-                        color='#00cc96'
-                    )
-                },
-            ))
+@app.callback(
+    output=[
+        Output('Para3'+suffix_count, 'children'),
+        Output('Para3'+suffix_sparkline_graph, 'figure'),
+        Output('Para3'+suffix_ooc_n, 'children'),
+        Output('Para3'+suffix_ooc_g, 'figure'),
+        Output('Para3'+suffix_indicator, 'color')
+    ],
+    inputs=[Input('interval-component', 'n_intervals')],
+)
+def update_param1_row(interval):
+    count, ooc_n, ooc_g, indicator = update_count(interval, 'Para3')
+    spark_line_graph = update_spark_line_graph(interval, 'Para3')
+    return count, spark_line_graph, ooc_n, ooc_g, indicator
 
-        # Update total count, ooc_percentage in Metrics
-        @app.callback(
-            output=[
-                Output(count_id, 'children'),
-                Output(ooc_percentage_id, 'children'),
-                Output(ooc_graph_id, 'figure'),
-                Output(indicator_id, 'color')
-            ],
-            inputs=[
-                Input('interval-component', 'n_intervals'),
-            ],
-            state=[
-                State(button_id, 'children')
-            ]
-        )
-        def update_count(interval, col):
-            if interval >= max_length:
-                total_count = max_length - 1
-            else:
-                total_count = interval
-            ooc_percentage_f = state_dict[col]['ooc'][total_count] * 100
-            ooc_percentage_str = "%.2f" % ooc_percentage_f + '%'
 
-            if ooc_percentage_f > 10:
-                ooc_percentage_f = 10
+@app.callback(
+    output=[
+        Output('Para4'+suffix_count, 'children'),
+        Output('Para4'+suffix_sparkline_graph, 'figure'),
+        Output('Para4'+suffix_ooc_n, 'children'),
+        Output('Para4'+suffix_ooc_g, 'figure'),
+        Output('Para4'+suffix_indicator, 'color')
+    ],
+    inputs=[Input('interval-component', 'n_intervals')],
+)
+def update_param1_row(interval):
+    count, ooc_n, ooc_g, indicator = update_count(interval, 'Para4')
+    spark_line_graph = update_spark_line_graph(interval, 'Para4')
+    return count, spark_line_graph, ooc_n, ooc_g, indicator
 
-            ooc_fig = ff.create_bullet(
-                data=[{
-                    "label": "label",
-                    "range": [4, 7, 10],
-                    "performance": [0, ooc_percentage_f],
-                }],
-                measures='performance',
-                ranges='range',
-                titles='label',
-                height=50,
-                width=150,
-                margin=dict(l=5, r=0, t=0, b=0, pad=0),
-                font={'size': 1},
-                measure_colors=['rgb(0,0,0)', 'rgb(0,0,0)'],
-                range_colors=['rgb(152,251,152)', 'rgb(250,128,114)'],
+
+@app.callback(
+    output=[
+        Output('Para5'+suffix_count, 'children'),
+        Output('Para5'+suffix_sparkline_graph, 'figure'),
+        Output('Para5'+suffix_ooc_n, 'children'),
+        Output('Para5'+suffix_ooc_g, 'figure'),
+        Output('Para5'+suffix_indicator, 'color')
+    ],
+    inputs=[Input('interval-component', 'n_intervals')],
+)
+def update_param1_row(interval):
+    count, ooc_n, ooc_g, indicator = update_count(interval, 'Para5')
+    spark_line_graph = update_spark_line_graph(interval, 'Para5')
+    return count, spark_line_graph, ooc_n, ooc_g, indicator
+
+
+#  ======= button to choose figure ============
+@app.callback(
+    output=Output('control-chart-live', 'figure'),
+    inputs=[
+        Input('interval-component', 'n_intervals'),
+        Input('Para1' + suffix_button_id, 'n_clicks_timestamp'),
+        Input('Para2' + suffix_button_id, 'n_clicks_timestamp'),
+        Input('Para3' + suffix_button_id, 'n_clicks_timestamp'),
+        Input('Para4' + suffix_button_id, 'n_clicks_timestamp'),
+        Input('Para5' + suffix_button_id, 'n_clicks_timestamp'),
+    ])
+def update_control_chart(interval, p1, p2, p3, p4, p5):
+    if p1 == p2 == p3 == p4 == p5 == 0:
+        p1 = time.time()
+
+    # first find out who clicked last
+    ts_list = {
+        'Para1': p1,
+        'Para2': p2,
+        'Para3': p3,
+        'Para4': p4,
+        'Para5': p5
+    }
+    latest_clicked = '',
+    latest = 0
+    for key in ts_list:
+        if ts_list[key] > latest:
+            latest_clicked = key
+            latest = ts_list[key]
+
+    return generate_graph(interval, latest_clicked)
+
+
+def update_spark_line_graph(interval, col):
+    # update spark line graph
+    if interval >= max_length:
+        total_count = max_length - 1
+    else:
+        total_count = interval
+
+    x_array = state_dict['Batch']['data'].tolist()
+    y_array = state_dict[col]['data'].tolist()
+
+    new_fig = go.Figure({
+        'data': [{'x': x_array[:total_count], 'y': y_array[:total_count], 'mode': 'lines+markers',
+                  'name': col}],
+        'layout': {
+            'margin': dict(
+                l=0, r=0, t=4, b=4, pad=0
             )
-            color = '#00cc96'
-            if ooc_percentage_f > 5:
-                color = '#FF0000'
+        }
+    })
 
-            return total_count, ooc_percentage_str, ooc_fig, color
-
-        # Update sparkline plot in Metrics
-
-        @app.callback(
-            output=Output(sparkline_graph_id, 'figure'),
-            inputs=[
-                Input('interval-component', 'n_intervals')
-            ],
-            state=[
-                State(button_id, 'children')
-            ]
-        )
-        def generate_sparkline_graph(interval, col):
-
-            if interval >= max_length:
-                total_count = max_length - 1
-            else:
-                total_count = interval
-
-            x_array = state_dict['Batch']['data'].tolist()
-            y_array = state_dict[col]['data'].tolist()
-
-            new_fig = go.Figure({
-                'data': [{'x': x_array[:total_count], 'y': y_array[:total_count], 'mode': 'lines+markers',
-                          'name': item}],
-                'layout': {
-                    'margin': dict(
-                        l=0, r=0, t=4, b=4, pad=0
-                    )
-                }
-            })
-
-            return new_fig
+    return new_fig
 
 
-    metric_header_div.append(
-        html.Div(
-            style={
-                'height': '100%',
-                'overflow': 'scroll'
-            },
-            children=children
-        )
+def update_count(interval, col):
+    if interval >= max_length:
+        total_count = max_length - 1
+    else:
+        total_count = interval
+    ooc_percentage_f = state_dict[col]['ooc'][total_count] * 100
+    ooc_percentage_str = "%.2f" % ooc_percentage_f + '%'
+
+    if ooc_percentage_f > 10:
+        ooc_percentage_f = 10
+
+    ooc_fig = ff.create_bullet(
+        data=[{
+            "label": "label",
+            "range": [4, 7, 10],
+            "performance": [0, ooc_percentage_f],
+        }],
+        measures='performance',
+        ranges='range',
+        titles='label',
+        height=50,
+        width=150,
+        margin=dict(l=5, r=0, t=0, b=0, pad=0),
+        font={'size': 1},
+        measure_colors=['rgb(0,0,0)', 'rgb(0,0,0)'],
+        range_colors=['rgb(152,251,152)', 'rgb(250,128,114)'],
     )
+    color = '#00cc96'
+    if ooc_percentage_f > 5:
+        color = '#FF0000'
 
-    input_list.append(Input('interval-component', 'n_intervals'))
-    # app referencing the dash app object
-    app.callback(output=[Output('control-chart-live', 'figure'), Output('click_state', 'data')],
-                 inputs=input_list,
-                 state=[State('control-chart-live', 'figure'), State('click_state', 'data')]
-                 )(create_callback(update_graph))
-
-    return html.Div(
-        id='metric_list',
-        className='row',
-        style={
-            'height': '100%'
-        },
-        children=metric_header_div
-    )
-
-
-# Update live-SPC chart upon click on metric row
-def update_graph(*inputs):
-    click_state = inputs[-1]
-    interval = inputs[-3]
-    figure = inputs[-2]
-
-    if len(click_state) == 0:
-        return generate_graph(interval, params[3], figure), inputs[:-3]
-    for j in range(len(inputs) - 3):
-        if click_state[j] != inputs[j]:
-            return generate_graph(interval, params[j + 1], figure), inputs[:-3]
-
-    curr_fig = figure['data'][0]['name']
-    return generate_graph(interval, curr_fig, figure), inputs[:-3]
+    return total_count, ooc_percentage_str, ooc_fig, color
 
 
 # default_treemap
@@ -500,11 +700,9 @@ def generate_default_treemap(batch_num):
 
     #TODO: colormap for rect
 
-
     shapes = []
     annotations = []
     counter = 0
-
 
     for r in rects:
         shapes.append(
@@ -556,7 +754,6 @@ def generate_default_treemap(batch_num):
     return trace0, layout
 
 
-
 def generate_tree_map():
     return html.Div(
         id='treemap-container',
@@ -583,129 +780,7 @@ def update_treemap(interval):
     return new_fig
 
 
-
-def build_top_panel():
-    return html.Div(
-        id='top-section-container',
-        className='row',
-        style={
-            'height': '45vh'
-        },
-        children=[
-            # Metrics summary
-            html.Div(
-                id='metric-summary-session',
-                className='eight columns',
-                style={'height': '100%'},
-                children=[
-                    generate_section_banner('Process Control Metrics Summary'),
-                    html.Div(
-                        id='metric_div',
-                        style={
-                            'height': '100%',
-                            'width': '100%',
-                            'margin': '10px 5px'
-                        },
-                        children=generate_metric_list()
-                    )
-                ]
-            ),
-            # Tree Map
-            html.Div(
-                id='treemap-session',
-                className='four columns',
-                children=[
-                    generate_section_banner('% OOC per Parameter'),
-                    generate_tree_map()
-                ]
-            )
-        ]
-    )
-
-
-def generate_section_banner(title):
-    return html.Div(
-        className="section-banner",
-        children=title
-    )
-
-
-def build_chart_panel():
-    return html.Div(
-        id='control-chart-container',
-        className='twelve columns',
-        children=[
-            generate_section_banner('Live SPC Chart'),
-
-            dcc.Interval(
-                id='interval-component',
-                interval=1 * 1000,  # in milliseconds
-                n_intervals=0
-            ),
-
-            dcc.Graph(
-                id="control-chart-live",
-                figure=go.Figure({
-                    'data': [{'x': [], 'y': [], 'mode': 'lines+markers', 'name': params[3]}]
-                }
-                )
-            )
-        ]
-    )
-
-
-app.layout = html.Div(
-    children=[
-        # Banner
-        html.Div(
-            id='banner',
-            className="banner", children=[
-                html.H5('Manufacturing SPC Dashboard - Process Control and Exception Reporting'),
-                html.Img(
-                    src="https://s3-us-west-1.amazonaws.com/plotly-tutorials/logo/new-branding/dash-logo-by-plotly-stripe-inverted.png"
-                )
-            ]
-        ),
-
-        # Tabs
-        html.Div(
-            id='tab-bar',
-            children=[
-                dcc.Tabs(
-                    id="tabs",
-                    value="tab-2",
-                    children=[
-                        dcc.Tab(label='What is SPC?', value='tab-1'),
-                        dcc.Tab(label='Control Chart Dashboard 1', value='tab-2'),
-                        dcc.Tab(label='Control Chart Dashboard 2', value='tab-3'),
-                    ]
-                )
-            ]
-        ),
-        # Main app
-        html.Div(
-            id='tabs-content',
-            className='container scalable',
-            children=[
-                html.Div(id='test-update', children='test'),
-                build_top_panel(),
-                build_chart_panel(),
-                # daq.LEDDisplay(
-                #     id='operator-id',
-                #     value='2701'
-                # ),
-                # daq.LEDDisplay(
-                #     id='batch_num',
-                #     value='620'
-                # ),
-                dcc.Store(
-                    id='click_state',
-                    data=[]
-                )
-            ]
-        )
-    ]
-)
+root_layout()
 
 # Running the server
 if __name__ == '__main__':
