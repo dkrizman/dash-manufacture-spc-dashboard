@@ -47,6 +47,9 @@
     margin: 10px 0px;
 }
 
+#metric_header > div {
+    font-weight: bold;
+}
 /* Scalable Container
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 .container.scalable {

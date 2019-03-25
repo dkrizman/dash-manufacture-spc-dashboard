@@ -56,8 +56,7 @@ def root_layout():
                         value="tab-2",
                         children=[
                             dcc.Tab(label='What is SPC?', value='tab-1'),
-                            dcc.Tab(label='Control Chart Dashboard 1', value='tab-2'),
-                            dcc.Tab(label='Control Chart Dashboard 2', value='tab-3'),
+                            dcc.Tab(label='Control Chart Dashboard 1', value='tab-2')
                         ]
                     )
                 ]
@@ -101,7 +100,7 @@ def build_top_panel():
                     html.Div(
                         # id='metric_div',
                         style={
-                            'height': 'calc(100% - 60px)',
+                            'height': 'calc(100% - 90px)',
                             'width': '100%',
                             'overflow': 'scroll'
                         },
@@ -133,7 +132,9 @@ def generate_metric_list_header():
     return generate_metric_row(
         'metric_header',
         {
-            'height': '30px'
+            'height': '30px',
+            'margin': '10px 0px',
+            'textAlign': 'center'
         },
         {
             'id': "m_header_1",
@@ -157,7 +158,7 @@ def generate_metric_list_header():
         },
         {
             'id': "m_header_6",
-            'children': html.Div("P/F")
+            'children': html.Div("Pass/Fail")
         })
 
 
@@ -199,10 +200,7 @@ def generate_metric_row_helper(index):
             'children': html.Button(
                 id=button_id,
                 children=item,
-                n_clicks_timestamp=0,
-                style={
-                    'width': '100%',
-                }
+                n_clicks_timestamp=0
             )
         },
         {
@@ -251,14 +249,14 @@ def generate_metric_row_helper(index):
                 figure=ff.create_bullet(
                     data=[{
                         "label": "label",
-                        "range": [4, 7, 10],
+                        "range": [3, 5, 10],
                         "performance": [0, 4]
                     }],
                     measures='performance',
                     ranges='range',
                     titles='label',
                     height=50,
-                    width=150,
+                    width=200,
                     margin=dict(l=5, r=0, t=0, b=0, pad=0),
                 )
             )
@@ -293,7 +291,7 @@ def generate_metric_row(id, style, col1, col2, col3, col4, col5, col6):
             ),
             html.Div(
                 id=col2['id'],
-                style={},
+                style={'textAlign': 'center'},
                 className='one column',
                 children=col2['children']
             ),
@@ -411,7 +409,7 @@ def generate_graph(interval, col):
                  'y': [],
                  'name': 'OOC',
                  'mode': 'markers',
-                 'marker': dict(color='rgba(210, 77, 87, 1)', symbol="square", size=13)
+                 'marker': dict(color='rgba(210, 77, 87, 1)', symbol="square", size=11)
                  }
 
     for index, data in enumerate(y_array[:total_count]):
@@ -675,14 +673,14 @@ def update_count(interval, col):
     ooc_fig = ff.create_bullet(
         data=[{
             "label": "label",
-            "range": [4, 7, 10],
+            "range": [3, 5, 10],
             "performance": [0, ooc_percentage_f],
         }],
         measures='performance',
         ranges='range',
         titles='label',
         height=50,
-        width=150,
+        width=200,
         margin=dict(l=5, r=0, t=0, b=0, pad=0),
         font={'size': 1},
         measure_colors=['rgb(0,0,0)', 'rgb(0,0,0)'],
@@ -761,8 +759,7 @@ def generate_default_treemap(batch_num):
         yaxis=dict(showgrid=False, zeroline=False),
         shapes=shapes,
         annotations=annotations,
-        hovermode='closest',
-        config=dict(displayModeBar=False)
+        hovermode='closest'
     )
     # print(time.time()-t)
 
@@ -775,7 +772,12 @@ def generate_tree_map():
         style={'padding': '10px 0px'},
         children=dcc.Graph(
             id='treemap',
-            figure=dict(data=[generate_default_treemap(0)[0]], layout=generate_default_treemap(0)[1])
+            figure=dict(data=[generate_default_treemap(0)[0]], layout=generate_default_treemap(0)[1]),
+            config={
+                'staticPlot': False,
+                'editable': False,
+                'displayModeBar': False
+            }
         )
     )
 
