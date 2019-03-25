@@ -1,5 +1,3 @@
-import os
-import sys
 import time
 
 import dash
@@ -9,6 +7,7 @@ from dash.dependencies import Input, Output, State
 import plotly.graph_objs as go
 import dash_daq as daq
 import plotly.figure_factory as ff
+from textwrap import dedent
 import squarify
 
 from Data import df, state_dict, populate_ooc
@@ -30,9 +29,6 @@ suffix_ooc_g = '_OOC_graph'
 suffix_indicator = '_indicator'
 
 
-#  todo create a list of config
-
-
 def root_layout():
     app.layout = html.Div(
         children=[
@@ -49,28 +45,71 @@ def root_layout():
 
             # Tabs
             html.Div(
-                id='tab-bar',
+                id='learn-more',
+                className='row container scalable',
                 children=[
-                    dcc.Tabs(
-                        id="tabs",
-                        value="tab-2",
-                        children=[
-                            dcc.Tab(label='What is SPC?', value='tab-1'),
-                            dcc.Tab(label='Control Chart Dashboard 1', value='tab-2')
-                        ]
+                    html.Button(
+                        id='learn-more-button',
+                        children="About this app",
+                        n_clicks=0,
+                        className='button-primary'
                     )
                 ]
             ),
             # Main app
             html.Div(
-                id='tabs-content',
+                id='app-content',
                 className='container scalable',
                 children=[
                     build_top_panel(),
                     build_chart_panel(),
                 ]
-            )
+            ),
+            generate_modal()
         ]
+    )
+
+
+def generate_modal():
+    return html.Div(
+        id='markdown',
+        className="modal",
+        style={'display': 'none'},
+        children=(
+            html.Div(
+                id="markdown-container",
+                className="markdown-container",
+                children=[
+                    html.Div(
+                        className='close-container',
+                        children=html.Button(
+                            "Close",
+                            id="markdown_close",
+                            n_clicks=0,
+                            className="closeButton"
+                        )
+                    ),
+                    html.Div(
+                        className='markdown-text',
+                        children=dcc.Markdown(
+                            children=dedent('''
+                            **What is this mock app about?**
+                            
+                            'dash-manufacture-spc-dashboard` is a dashboard for monitoring read-time process quality along manufacture production line. 
+
+                            **What does this app shows**
+                            
+                            Click on buttons in `Parameter' column to visualize details of measurement trendlines on the bottom panel.
+                            
+                            The Sparkline on top panel and Control chart on bottom panel show Shewhart process monitor using mock data. 
+                            The trend is updated every 2 seconds to simulate real-time measurements. Data falling outside of six-sigma control limit are signals indicating 'Out of Control(OOC)', and will 
+                            trigger alerts instantly for a detailed checkup. 
+                        ''')
+                        )
+                    )
+                ]
+            )
+        )
     )
 
 
@@ -324,7 +363,7 @@ def generate_metric_row(id, style, col1, col2, col3, col4, col5, col6):
             html.Div(
                 id=col6['id'],
                 style={
-                    'display':'flex',
+                    'display': 'flex',
                     'justifyContent': 'center'
                 },
                 className='one column',
@@ -390,9 +429,9 @@ def generate_graph(interval, col):
 
     ooc_trace = {'x': [],
                  'y': [],
-                 'name': 'OOC',
+                 'name': 'Out of Control',
                  'mode': 'markers',
-                 'marker': dict(color='rgba(210, 77, 87, 1)', symbol="square", size=11)
+                 'marker': dict(color='rgba(210, 77, 87, 0.7)', symbol="square", size=11)
                  }
 
     for index, data in enumerate(y_array[:total_count]):
@@ -505,6 +544,16 @@ def generate_graph(interval, col):
     return fig
 
 
+# ======= Callbacks for modal popup =======
+@app.callback(Output("markdown", "style"),
+              [Input("learn-more-button", "n_clicks"), Input("markdown_close", "n_clicks")])
+def update_click_output(button_click, close_click):
+    if button_click > close_click:
+        return {"display": "block"}
+    else:
+        return {"display": "none"}
+
+
 #  ======= update each row at interval =========
 @app.callback(
     output=[
@@ -586,7 +635,7 @@ def update_param1_row(interval):
     return count, spark_line_graph, ooc_n, ooc_g, indicator
 
 
-#  ======= button to choose figure ============
+#  ======= button to choose/update figure based on click ============
 @app.callback(
     output=Output('control-chart-live', 'figure'),
     inputs=[
