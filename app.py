@@ -102,7 +102,7 @@ def generate_modal():
                             Click on buttons in `Parameter' column to visualize details of measurement trendlines on the bottom panel.
                             
                             The Sparkline on top panel and Control chart on bottom panel show Shewhart process monitor using mock data. 
-                            The trend is updated every 2 seconds to simulate real-time measurements. Data falling outside of six-sigma control limit are signals indicating 'Out of Control(OOC)', and will 
+                            The trend is updated every second to simulate real-time measurements. Data falling outside of six-sigma control limit are signals indicating 'Out of Control(OOC)', and will 
                             trigger alerts instantly for a detailed checkup. 
                         ''')
                         )
