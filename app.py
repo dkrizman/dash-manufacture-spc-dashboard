@@ -223,7 +223,7 @@ def generate_metric_row_helper(index):
                     'displayModeBar': False
                 },
                 figure=go.Figure({
-                    'data': [{'x': [], 'y': [], 'mode': 'lines+markers', 'name': item, }],
+                    'data': [{'x': [], 'y': [], 'mode': 'lines+markers', 'name': item}],
                     'layout': {
                         'margin': dict(
                             l=0, r=0, t=4, b=4, pad=0
@@ -350,7 +350,7 @@ def build_chart_panel():
             dcc.Graph(
                 id="control-chart-live",
                 figure=go.Figure({
-                    'data': [{'x': [], 'y': [], 'mode': 'lines+markers', 'name': params[3]}]
+                    'data': [{'x': [], 'y': [], 'mode': 'lines+markers'}]
                 }
                 )
             )
@@ -401,18 +401,33 @@ def generate_graph(interval, col):
 
     x_array = state_dict['Batch']['data'].tolist()
     y_array = col_data.tolist()
-    # fig['data'][0]['name'] = col
 
     if interval > max_length:
         total_count = max_length - 1
     else:
         total_count = interval
+
+    ooc_trace = {'x': [],
+              'y': [],
+              'name': 'OOC',
+              'mode':'markers',
+             'marker': dict(color='rgba(210, 77, 87, 1)', size = 10)}
+
+    for index, data in enumerate(y_array[:total_count]):
+        if data >= ucl or data <= lcl:
+            ooc_trace['x'].append(index + 1)
+            ooc_trace['y'].append(data)
+
     fig = {
-        'data': [{
+        'data': [
+            {
             'x': x_array[:total_count],
             'y': y_array[:total_count],
-            'name': col}],
+            'mode': 'lines+markers',
+            'name': col},
 
+            ooc_trace
+        ]
     }
 
     len_figure = len(fig['data'][0]['x'])
@@ -511,11 +526,11 @@ def generate_graph(interval, col):
 #  ======= update each row at interval =========
 @app.callback(
     output=[
-        Output('Para1'+suffix_count, 'children'),
-        Output('Para1'+suffix_sparkline_graph, 'figure'),
-        Output('Para1'+suffix_ooc_n, 'children'),
-        Output('Para1'+suffix_ooc_g, 'figure'),
-        Output('Para1'+suffix_indicator, 'color')
+        Output('Para1' + suffix_count, 'children'),
+        Output('Para1' + suffix_sparkline_graph, 'figure'),
+        Output('Para1' + suffix_ooc_n, 'children'),
+        Output('Para1' + suffix_ooc_g, 'figure'),
+        Output('Para1' + suffix_indicator, 'color')
     ],
     inputs=[Input('interval-component', 'n_intervals')],
 )
@@ -527,11 +542,11 @@ def update_param1_row(interval):
 
 @app.callback(
     output=[
-        Output('Para2'+suffix_count, 'children'),
-        Output('Para2'+suffix_sparkline_graph, 'figure'),
-        Output('Para2'+suffix_ooc_n, 'children'),
-        Output('Para2'+suffix_ooc_g, 'figure'),
-        Output('Para2'+suffix_indicator, 'color')
+        Output('Para2' + suffix_count, 'children'),
+        Output('Para2' + suffix_sparkline_graph, 'figure'),
+        Output('Para2' + suffix_ooc_n, 'children'),
+        Output('Para2' + suffix_ooc_g, 'figure'),
+        Output('Para2' + suffix_indicator, 'color')
     ],
     inputs=[Input('interval-component', 'n_intervals')],
 )
@@ -543,11 +558,11 @@ def update_param1_row(interval):
 
 @app.callback(
     output=[
-        Output('Para3'+suffix_count, 'children'),
-        Output('Para3'+suffix_sparkline_graph, 'figure'),
-        Output('Para3'+suffix_ooc_n, 'children'),
-        Output('Para3'+suffix_ooc_g, 'figure'),
-        Output('Para3'+suffix_indicator, 'color')
+        Output('Para3' + suffix_count, 'children'),
+        Output('Para3' + suffix_sparkline_graph, 'figure'),
+        Output('Para3' + suffix_ooc_n, 'children'),
+        Output('Para3' + suffix_ooc_g, 'figure'),
+        Output('Para3' + suffix_indicator, 'color')
     ],
     inputs=[Input('interval-component', 'n_intervals')],
 )
@@ -559,11 +574,11 @@ def update_param1_row(interval):
 
 @app.callback(
     output=[
-        Output('Para4'+suffix_count, 'children'),
-        Output('Para4'+suffix_sparkline_graph, 'figure'),
-        Output('Para4'+suffix_ooc_n, 'children'),
-        Output('Para4'+suffix_ooc_g, 'figure'),
-        Output('Para4'+suffix_indicator, 'color')
+        Output('Para4' + suffix_count, 'children'),
+        Output('Para4' + suffix_sparkline_graph, 'figure'),
+        Output('Para4' + suffix_ooc_n, 'children'),
+        Output('Para4' + suffix_ooc_g, 'figure'),
+        Output('Para4' + suffix_indicator, 'color')
     ],
     inputs=[Input('interval-component', 'n_intervals')],
 )
@@ -575,11 +590,11 @@ def update_param1_row(interval):
 
 @app.callback(
     output=[
-        Output('Para5'+suffix_count, 'children'),
-        Output('Para5'+suffix_sparkline_graph, 'figure'),
-        Output('Para5'+suffix_ooc_n, 'children'),
-        Output('Para5'+suffix_ooc_g, 'figure'),
-        Output('Para5'+suffix_indicator, 'color')
+        Output('Para5' + suffix_count, 'children'),
+        Output('Para5' + suffix_sparkline_graph, 'figure'),
+        Output('Para5' + suffix_ooc_n, 'children'),
+        Output('Para5' + suffix_ooc_g, 'figure'),
+        Output('Para5' + suffix_indicator, 'color')
     ],
     inputs=[Input('interval-component', 'n_intervals')],
 )
@@ -681,7 +696,6 @@ def update_count(interval, col):
 
 # default_treemap
 def generate_default_treemap(batch_num):
-
     x = 0.
     y = 0.
     width = 100.
@@ -689,7 +703,7 @@ def generate_default_treemap(batch_num):
 
     values = []
     for param in params[1:]:
-        size_of_rect = (state_dict[param]['ooc'][batch_num]*100) + 1
+        size_of_rect = (state_dict[param]['ooc'][batch_num] * 100) + 1
         values.append(size_of_rect)
 
     normed = squarify.normalize_sizes(values, width, height)
@@ -698,7 +712,7 @@ def generate_default_treemap(batch_num):
     color_brewer = ['rgb(75,103,144)', 'rgb(101,123,159)', 'rgb(127,143,175)', 'rgb(152,165,191)', 'rgb(177,187,206)',
                     'rgb(203,209,222)']
 
-    #TODO: colormap for rect
+    # TODO: colormap for rect
 
     shapes = []
     annotations = []
