@@ -408,10 +408,11 @@ def generate_graph(interval, col):
         total_count = interval
 
     ooc_trace = {'x': [],
-              'y': [],
-              'name': 'OOC',
-              'mode':'markers',
-             'marker': dict(color='rgba(210, 77, 87, 1)', size = 10)}
+                 'y': [],
+                 'name': 'OOC',
+                 'mode': 'markers',
+                 'marker': dict(color='rgba(210, 77, 87, 1)', symbol="square", size=13)
+                 }
 
     for index, data in enumerate(y_array[:total_count]):
         if data >= ucl or data <= lcl:
@@ -421,10 +422,10 @@ def generate_graph(interval, col):
     fig = {
         'data': [
             {
-            'x': x_array[:total_count],
-            'y': y_array[:total_count],
-            'mode': 'lines+markers',
-            'name': col},
+                'x': x_array[:total_count],
+                'y': y_array[:total_count],
+                'mode': 'lines+markers',
+                'name': col},
 
             ooc_trace
         ]
