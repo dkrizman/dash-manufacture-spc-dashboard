@@ -1,20 +1,9 @@
-## Reference :
-
-* Spotfire manufacturing solutions [Link](https://community.tibco.com/wiki/tibco-spotfire-and-tibco-streambase-manufacturing-solutions)
-
 
 ## Introduction
-`dash-spc-dashboard` is a repository created to serve as a guideline of what a Dash app's repository should look like. 
+`dash-manufacture-spc-dashboard` is a dashboard for monitoring read-time process quality along manufacture production line.
 
-SPC dashboard helps manufacturing clients to explore, monitor, and analyze their production lines.
 
-Customize your own SPC dashboards to track metrics in real-time!
-
-### app_mock.py and app.py
-
-Explain why there is two different versions of the app if necessary. E.g. which app is the heroku version, and local version.
-
-### [Technique/field associated with the instrument]
+### About SPC 
 Give a brief description of the scientific background related to the application that you're interfacing with.
 
 ### dash-core 
@@ -36,3 +25,7 @@ Here, provide a list of all of your controls and a description of what they do.
 
 ## Resources
 If necessary, include resources like documentation for your app, or the pages associated with any external packages used in the project. 
+
+## Reference :
+* Spotfire manufacturing solutions [Link](https://community.tibco.com/wiki/tibco-spotfire-and-tibco-streambase-manufacturing-solutions)
+
