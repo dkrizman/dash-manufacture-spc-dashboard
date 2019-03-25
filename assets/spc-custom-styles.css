@@ -63,20 +63,24 @@
   display: none;
 }
 
-#metric_list .svg-container .main-svg{
-    height: 100% !important;
-    width:100% !important;
-}
-#metric_list .plot-containery{
-    height: 100% !important;
-    width:100% !important;
-}
-#metric_list .plotly{
-    height: 100% !important;
-    width:100% !important;
-}
+/*#metric_list .svg-container .main-svg{*/
+    /*height: 100% !important;*/
+    /*width:100% !important;*/
+/*}*/
+/*#metric_list .plot-containery{*/
+    /*height: 100% !important;*/
+    /*width:100% !important;*/
+/*}*/
+/*#metric_list .plotly{*/
+    /*height: 100% !important;*/
+    /*width:100% !important;*/
+/*}*/
 
-#metric_list .svg-container {
-    height: 100% !important;
-    width:100% !important;
+/*#metric_list .svg-container {*/
+    /*height: 100% !important;*/
+    /*width:100% !important;*/
+/*}*/
+
+#Para1_button, #Para2_button, #Para3_button, #Para4_button, #Para5_button{
+    padding: 0px 0px;
 }

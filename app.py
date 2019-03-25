@@ -158,7 +158,7 @@ def generate_metric_list_header():
         },
         {
             'id': "m_header_6",
-            'children': html.Div("Pass/Fail")
+            'children': "Pass/Fail"
         })
 
 
@@ -200,7 +200,10 @@ def generate_metric_row_helper(index):
             'children': html.Button(
                 id=button_id,
                 children=item,
-                n_clicks_timestamp=0
+                n_clicks_timestamp=0,
+                style={
+                    'width': '100%'
+                }
             )
         },
         {
@@ -320,7 +323,10 @@ def generate_metric_row(id, style, col1, col2, col3, col4, col5, col6):
             ),
             html.Div(
                 id=col6['id'],
-                style={},
+                style={
+                    'display':'flex',
+                    'justifyContent': 'center'
+                },
                 className='one column',
                 children=col6['children']
             )
@@ -354,29 +360,6 @@ def build_chart_panel():
             )
         ]
     )
-
-
-def create_callback(retfunc):
-    """
-    pass *input_value to retfunc
-
-    creates a callback function
-    """
-
-    def callback(*input_values):
-        if input_values is not None and input_values != 'None':
-            try:
-                ret_val = retfunc(*input_values)
-            except Exception as e:
-                exc_type, exc_obj, exc_tb = sys.exc_info()
-                fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-                print('Callback Exception:', e, exc_type, fname, exc_tb.tb_lineno)
-                print('parameters:', *input_values)
-            return ret_val
-        else:
-            return []
-
-    return callback
 
 
 def generate_graph(interval, col):
