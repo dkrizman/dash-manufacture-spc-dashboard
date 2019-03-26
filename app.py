@@ -229,7 +229,7 @@ def generate_metric_row_helper(index):
     sparkline_graph_id = item + suffix_sparkline_graph
     count_id = item + suffix_count
     ooc_percentage_id = item + suffix_ooc_n
-    ooc_graph_id = item + suffix_ooc_g
+    ooc_graph_bar_id = item + suffix_ooc_g
     indicator_id = item + suffix_indicator
 
     return generate_metric_row(
@@ -239,6 +239,7 @@ def generate_metric_row_helper(index):
             'children': html.Button(
                 id=button_id,
                 children=item,
+                title="Click to visualize live SPC chart",
                 n_clicks_timestamp=0,
                 style={
                     'width': '100%'
@@ -276,32 +277,14 @@ def generate_metric_row_helper(index):
             'children': '0.00%'
         },
         {
-            'id': ooc_graph_id + '_container',
-            'children': dcc.Graph(
-                id=ooc_graph_id,
-                style={
-                    'width': '100%',
-                    'height': '95%'
-                },
-                config={
-                    'staticPlot': False,
-                    'editable': False,
-                    'displayModeBar': False
-                },
-                figure=ff.create_bullet(
-                    data=[{
-                        "label": "label",
-                        "range": [3, 5, 10],
-                        "performance": [0, 4]
-                    }],
-                    measures='performance',
-                    ranges='range',
-                    titles='label',
-                    height=50,
-                    width=200,
-                    margin=dict(l=5, r=0, t=0, b=0, pad=0),
+            'id': ooc_graph_bar_id + '_container',
+            'children':
+                daq.GraduatedBar(
+                    id=ooc_graph_bar_id,
+                    color={"gradient": True, "ranges": {"green": [0, 3], "yellow": [3, 5], "red": [5, 30]}},
+                    showCurrentValue=False,
+                    value=30
                 )
-            )
         },
         {
             'id': item + '_pf',
@@ -560,15 +543,15 @@ def update_click_output(button_click, close_click):
         Output('Para1' + suffix_count, 'children'),
         Output('Para1' + suffix_sparkline_graph, 'figure'),
         Output('Para1' + suffix_ooc_n, 'children'),
-        Output('Para1' + suffix_ooc_g, 'figure'),
+        Output('Para1' + suffix_ooc_g, 'value'),
         Output('Para1' + suffix_indicator, 'color')
     ],
     inputs=[Input('interval-component', 'n_intervals')],
 )
 def update_param1_row(interval):
-    count, ooc_n, ooc_g, indicator = update_count(interval, 'Para1')
+    count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Para1')
     spark_line_graph = update_spark_line_graph(interval, 'Para1')
-    return count, spark_line_graph, ooc_n, ooc_g, indicator
+    return count, spark_line_graph, ooc_n, ooc_g_value, indicator
 
 
 @app.callback(
@@ -576,15 +559,15 @@ def update_param1_row(interval):
         Output('Para2' + suffix_count, 'children'),
         Output('Para2' + suffix_sparkline_graph, 'figure'),
         Output('Para2' + suffix_ooc_n, 'children'),
-        Output('Para2' + suffix_ooc_g, 'figure'),
+        Output('Para2' + suffix_ooc_g, 'value'),
         Output('Para2' + suffix_indicator, 'color')
     ],
     inputs=[Input('interval-component', 'n_intervals')],
 )
 def update_param1_row(interval):
-    count, ooc_n, ooc_g, indicator = update_count(interval, 'Para2')
+    count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Para2')
     spark_line_graph = update_spark_line_graph(interval, 'Para2')
-    return count, spark_line_graph, ooc_n, ooc_g, indicator
+    return count, spark_line_graph, ooc_n, ooc_g_value, indicator
 
 
 @app.callback(
@@ -592,15 +575,15 @@ def update_param1_row(interval):
         Output('Para3' + suffix_count, 'children'),
         Output('Para3' + suffix_sparkline_graph, 'figure'),
         Output('Para3' + suffix_ooc_n, 'children'),
-        Output('Para3' + suffix_ooc_g, 'figure'),
+        Output('Para3' + suffix_ooc_g, 'value'),
         Output('Para3' + suffix_indicator, 'color')
     ],
     inputs=[Input('interval-component', 'n_intervals')],
 )
 def update_param1_row(interval):
-    count, ooc_n, ooc_g, indicator = update_count(interval, 'Para3')
+    count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Para3')
     spark_line_graph = update_spark_line_graph(interval, 'Para3')
-    return count, spark_line_graph, ooc_n, ooc_g, indicator
+    return count, spark_line_graph, ooc_n, ooc_g_value, indicator
 
 
 @app.callback(
@@ -608,15 +591,15 @@ def update_param1_row(interval):
         Output('Para4' + suffix_count, 'children'),
         Output('Para4' + suffix_sparkline_graph, 'figure'),
         Output('Para4' + suffix_ooc_n, 'children'),
-        Output('Para4' + suffix_ooc_g, 'figure'),
+        Output('Para4' + suffix_ooc_g, 'value'),
         Output('Para4' + suffix_indicator, 'color')
     ],
     inputs=[Input('interval-component', 'n_intervals')],
 )
 def update_param1_row(interval):
-    count, ooc_n, ooc_g, indicator = update_count(interval, 'Para4')
+    count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Para4')
     spark_line_graph = update_spark_line_graph(interval, 'Para4')
-    return count, spark_line_graph, ooc_n, ooc_g, indicator
+    return count, spark_line_graph, ooc_n, ooc_g_value, indicator
 
 
 @app.callback(
@@ -624,15 +607,15 @@ def update_param1_row(interval):
         Output('Para5' + suffix_count, 'children'),
         Output('Para5' + suffix_sparkline_graph, 'figure'),
         Output('Para5' + suffix_ooc_n, 'children'),
-        Output('Para5' + suffix_ooc_g, 'figure'),
+        Output('Para5' + suffix_ooc_g, 'value'),
         Output('Para5' + suffix_indicator, 'color')
     ],
     inputs=[Input('interval-component', 'n_intervals')],
 )
 def update_param1_row(interval):
-    count, ooc_n, ooc_g, indicator = update_count(interval, 'Para5')
+    count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Para5')
     spark_line_graph = update_spark_line_graph(interval, 'Para5')
-    return count, spark_line_graph, ooc_n, ooc_g, indicator
+    return count, spark_line_graph, ooc_n, ooc_g_value, indicator
 
 
 #  ======= button to choose/update figure based on click ============
@@ -691,38 +674,30 @@ def update_spark_line_graph(interval, col):
     return new_fig
 
 
+# Update batch num, ooc percentage, ooc_grad_value and indicator color
+
 def update_count(interval, col):
     if interval >= max_length:
         total_count = max_length - 1
     else:
         total_count = interval
+
     ooc_percentage_f = state_dict[col]['ooc'][total_count] * 100
     ooc_percentage_str = "%.2f" % ooc_percentage_f + '%'
 
-    if ooc_percentage_f > 10:
-        ooc_percentage_f = 10
+    if ooc_percentage_f > 30:
+        ooc_percentage_f = 30
 
-    ooc_fig = ff.create_bullet(
-        data=[{
-            "label": "label",
-            "range": [3, 5, 10],
-            "performance": [0, ooc_percentage_f],
-        }],
-        measures='performance',
-        ranges='range',
-        titles='label',
-        height=50,
-        width=200,
-        margin=dict(l=5, r=0, t=0, b=0, pad=0),
-        font={'size': 1},
-        measure_colors=['rgb(0,0,0)', 'rgb(0,0,0)'],
-        range_colors=['rgb(152,251,152)', 'rgb(250,128,114)'],
-    )
-    color = '#00cc96'
-    if ooc_percentage_f > 5:
+    ooc_grad_val = float(ooc_percentage_f)
+
+    if 0 <= ooc_percentage_f <= 3:
+        color = '#00cc96'
+    elif 3 < ooc_percentage_f <= 5:
+        color = '#FFFF00'
+    else:
         color = '#FF0000'
 
-    return total_count, ooc_percentage_str, ooc_fig, color
+    return str(total_count), ooc_percentage_str, ooc_grad_val, color
 
 
 # default_treemap
