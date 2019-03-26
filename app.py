@@ -615,7 +615,6 @@ def update_param1_row(interval):
 )
 def update_param1_row(interval):
     count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Para5')
-    print('ooc_g_value', ooc_g_value)
     spark_line_graph = update_spark_line_graph(interval, 'Para5')
     return count, spark_line_graph, ooc_n, ooc_g_value, indicator
 
@@ -692,10 +691,8 @@ def update_count(interval, col):
 
     ooc_grad_val = float(ooc_percentage_f)
 
-    if 0 <= ooc_grad_val <= 3:
+    if 0 <= ooc_grad_val <= 5:
         color = '#00cc96'
-    elif 3 < ooc_grad_val <= 7:
-        color = '#FFFF00'
     else:
         color = '#FF0000'
 
