@@ -229,7 +229,7 @@ def generate_metric_row_helper(index):
     sparkline_graph_id = item + suffix_sparkline_graph
     count_id = item + suffix_count
     ooc_percentage_id = item + suffix_ooc_n
-    ooc_graph_bar_id = item + suffix_ooc_g
+    ooc_graph_id = item + suffix_ooc_g
     indicator_id = item + suffix_indicator
 
     return generate_metric_row(
@@ -277,13 +277,14 @@ def generate_metric_row_helper(index):
             'children': '0.00%'
         },
         {
-            'id': ooc_graph_bar_id + '_container',
+            'id': ooc_graph_id + '_container',
             'children':
                 daq.GraduatedBar(
-                    id=ooc_graph_bar_id,
-                    color={"gradient": True, "ranges": {"green": [0, 3], "yellow": [3, 5], "red": [5, 30]}},
+                    id=ooc_graph_id,
+                    color={"gradient": True, "ranges": {"green": [0, 3], "yellow": [3, 7], "red": [7, 15]}},
                     showCurrentValue=False,
-                    value=30
+                    max=15,
+                    value=15
                 )
         },
         {
@@ -614,6 +615,7 @@ def update_param1_row(interval):
 )
 def update_param1_row(interval):
     count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Para5')
+    print('ooc_g_value', ooc_g_value)
     spark_line_graph = update_spark_line_graph(interval, 'Para5')
     return count, spark_line_graph, ooc_n, ooc_g_value, indicator
 
@@ -685,14 +687,14 @@ def update_count(interval, col):
     ooc_percentage_f = state_dict[col]['ooc'][total_count] * 100
     ooc_percentage_str = "%.2f" % ooc_percentage_f + '%'
 
-    if ooc_percentage_f > 30:
-        ooc_percentage_f = 30
+    if ooc_percentage_f > 15:
+        ooc_percentage_f = 15
 
     ooc_grad_val = float(ooc_percentage_f)
 
-    if 0 <= ooc_percentage_f <= 3:
+    if 0 <= ooc_grad_val <= 3:
         color = '#00cc96'
-    elif 3 < ooc_percentage_f <= 5:
+    elif 3 < ooc_grad_val <= 7:
         color = '#FFFF00'
     else:
         color = '#FF0000'

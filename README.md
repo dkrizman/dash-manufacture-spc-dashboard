@@ -56,7 +56,7 @@ Click on **About this app** button to learn more about how this app works.
 Click on buttons in `Parameter' column to visualize details of trendline on the bottom panel.
 
 The Sparkline on top panel and Control chart on bottom panel show Shewhart process control using mock data. 
-The trend is updated every seconds to simulate real-time measurements. Data falling outside of six-sigma control limit are signals indicating 'Out of Control(OOC)', and will 
+The trend is updated every three seconds to simulate real-time measurements. Data falling outside of six-sigma control limit are signals indicating 'Out of Control(OOC)', and will 
 trigger alerts instantly for a detailed checkup. 
 
 ## Resources and references
