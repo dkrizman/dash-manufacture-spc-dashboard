@@ -6,9 +6,7 @@ import dash_html_components as html
 from dash.dependencies import Input, Output, State
 import plotly.graph_objs as go
 import dash_daq as daq
-import plotly.figure_factory as ff
 from textwrap import dedent
-import squarify
 
 from Data import df, state_dict, populate_ooc
 
@@ -53,6 +51,12 @@ def root_layout():
                         children="About this app",
                         n_clicks=0,
                         className='button-primary'
+                    ),
+                    html.Div(
+                        id ='status-container',
+                        children =[
+                            daq.StopButton(id='stop-button')
+                        ]
                     )
                 ]
             ),
@@ -68,6 +72,16 @@ def root_layout():
             generate_modal()
         ]
     )
+
+
+@app.callback(
+    [Output('interval-component', 'disabled'),
+     Output('stop-button', 'buttonText')],
+    [Input('stop-button', 'n_clicks')],
+    state=[State('interval-component', 'disabled')]
+)
+def stop_production(_, current):
+    return not current, "stop" if current else "start measurement"
 
 
 def generate_modal():
@@ -93,18 +107,18 @@ def generate_modal():
                         className='markdown-text',
                         children=dcc.Markdown(
                             children=dedent('''
-                            **What is this mock app about?**
-                            
-                            'dash-manufacture-spc-dashboard` is a dashboard for monitoring read-time process quality along manufacture production line. 
+                        **What is this mock app about?**
+                        
+                        'dash-manufacture-spc-dashboard` is a dashboard for monitoring read-time process quality along manufacture production line. 
 
-                            **What does this app shows**
-                            
-                            Click on buttons in `Parameter' column to visualize details of measurement trendlines on the bottom panel.
-                            
-                            The Sparkline on top panel and Control chart on bottom panel show Shewhart process monitor using mock data. 
-                            The trend is updated every second to simulate real-time measurements. Data falling outside of six-sigma control limit are signals indicating 'Out of Control(OOC)', and will 
-                            trigger alerts instantly for a detailed checkup. 
-                        ''')
+                        **What does this app shows**
+                        
+                        Click on buttons in `Parameter' column to visualize details of measurement trendlines on the bottom panel.
+                        
+                        The Sparkline on top panel and Control chart on bottom panel show Shewhart process monitor using mock data. 
+                        The trend is updated every second to simulate real-time measurements. Data falling outside of six-sigma control limit are signals indicating 'Out of Control(OOC)', and will 
+                        trigger alerts instantly for a detailed checkup. 
+                    ''')
                         )
                     )
                 ]
@@ -153,16 +167,39 @@ def build_top_panel():
                     )
                 ]
             ),
-            # Tree Map
+
+            # Piechart
             html.Div(
-                id='treemap-session',
                 className='four columns',
                 children=[
                     generate_section_banner('% OOC per Parameter'),
-                    generate_tree_map()
+                    generate_piechart()
                 ]
             )
         ]
+    )
+
+
+def generate_piechart():
+    return dcc.Graph(
+        id='piechart',
+        figure={
+            'data': [
+                {
+                    'labels': params[1:],
+                    'values': [1, 1, 1, 1, 1],
+                    'type': 'pie',
+                    'marker': {'colors': ['rgb(56, 75, 126)',
+                                          'rgb(18, 36, 37)',
+                                          'rgb(34, 53, 101)',
+                                          'rgb(36, 55, 57)',
+                                          'rgb(6, 4, 4)']},
+                    'hoverinfo': 'label',
+                    'textinfo': 'label'
+                }],
+            'layout': {
+                'showlegend': True}
+        }
     )
 
 
@@ -367,7 +404,8 @@ def build_chart_panel():
             dcc.Interval(
                 id='interval-component',
                 interval=3 * 1000,  # in milliseconds
-                n_intervals=0
+                n_intervals=0,
+                disabled=False
             ),
 
             dcc.Store(
@@ -400,8 +438,6 @@ def generate_graph(interval, col):
     lcl = stats['lcl']
     usl = stats['usl']
     lsl = stats['lsl']
-    # minimum = stats['min']
-    # maximum = stats['max']
 
     x_array = state_dict['Batch']['data'].tolist()
     y_array = col_data.tolist()
@@ -676,7 +712,6 @@ def update_spark_line_graph(interval, col):
 
 
 # Update batch num, ooc percentage, ooc_grad_value and indicator color
-
 def update_count(interval, col):
     if interval >= max_length:
         total_count = max_length - 1
@@ -699,108 +734,42 @@ def update_count(interval, col):
     return str(total_count), ooc_percentage_str, ooc_grad_val, color
 
 
-# default_treemap
-def generate_default_treemap(batch_num):
-    x = 0.
-    y = 0.
-    width = 100.
-    height = 100.
-
-    values = []
-    for param in params[1:]:
-        size_of_rect = (state_dict[param]['ooc'][batch_num] * 100) + 1
-        values.append(size_of_rect)
-
-    normed = squarify.normalize_sizes(values, width, height)
-    rects = squarify.squarify(normed, x, y, width, height)
-
-    color_brewer = ['rgb(75,103,144)', 'rgb(101,123,159)', 'rgb(127,143,175)', 'rgb(152,165,191)', 'rgb(177,187,206)',
-                    'rgb(203,209,222)']
-
-    # TODO: colormap for rect
-
-    shapes = []
-    annotations = []
-    counter = 0
-
-    for r in rects:
-        shapes.append(
-            dict(
-                type='rect',
-                x0=r['x'],
-                y0=r['y'],
-                x1=r['x'] + r['dx'],
-                y1=r['y'] + r['dy'],
-                line=dict(width=1),
-                fillcolor=color_brewer[counter]
-            )
-        )
-        annotations.append(
-            dict(
-                x=r['x'] + (r['dx'] / 2),
-                y=r['y'] + (r['dy'] / 2),
-                text=params[1:][counter],
-                showarrow=False
-            )
-        )
-        counter = counter + 1
-        if counter >= len(color_brewer):
-            counter = 0
-
-    t = time.time()
-
-    # For hover text
-    trace0 = go.Scatter(
-        x=[r['x'] + (r['dx'] / 2) for r in rects],
-        y=[r['y'] + (r['dy'] / 2) for r in rects],
-        text=[str(v) for v in params[1:]],
-        mode='text',
-    )
-
-    layout = dict(
-        height=400,
-        width=500,
-        margin=dict(l=0, r=0, t=10, b=0),
-        xaxis=dict(showgrid=False, zeroline=False),
-        yaxis=dict(showgrid=False, zeroline=False),
-        shapes=shapes,
-        annotations=annotations,
-        hovermode='closest'
-    )
-    # print(time.time()-t)
-
-    return trace0, layout
-
-
-def generate_tree_map():
-    return html.Div(
-        id='treemap-container',
-        style={'padding': '10px 0px'},
-        children=dcc.Graph(
-            id='treemap',
-            figure=dict(data=[generate_default_treemap(0)[0]], layout=generate_default_treemap(0)[1]),
-            config={
-                'staticPlot': False,
-                'editable': False,
-                'displayModeBar': False
-            }
-        )
-    )
-
-
+# Update piechart
 @app.callback(
-    output=Output('treemap', 'figure'),
+    output=Output('piechart', 'figure'),
     inputs=[
         Input('interval-component', 'n_intervals')]
 )
-def update_treemap(interval):
+def update_piechart(interval):
     if interval >= max_length:
         total_count = max_length - 1
     else:
         total_count = interval
 
-    new_fig = dict(data=[generate_default_treemap(total_count)[0]], layout=generate_default_treemap(total_count)[1])
-    return new_fig
+    values = []
+    colors = []
+    for param in params[1:]:
+        ooc_param = (state_dict[param]['ooc'][total_count] * 100) + 1
+        values.append(ooc_param)
+        if ooc_param > 4:
+            colors.append('rgb(206,0,5)')
+        else:
+            colors.append('rgb(76,178,51')
+
+    new_figure = {
+        'data': [
+            {
+                'labels': params[1:],
+                'values': values,
+                'type': 'pie',
+                'marker': {'colors': colors, 'line': dict(color='#FFFFFF', width=2)},
+                'hoverinfo': 'label',
+                'textinfo': 'label'
+            }],
+        'layout': {
+            'showlegend': True}
+    }
+    return new_figure
 
 
 root_layout()
