@@ -1,4 +1,5 @@
 import time
+import json
 
 import dash
 import dash_core_components as dcc
@@ -25,6 +26,16 @@ suffix_count = '_count'
 suffix_ooc_n = '_OOC_number'
 suffix_ooc_g = '_OOC_graph'
 suffix_indicator = '_indicator'
+
+historical_sl = {}
+for item in params[1:]:
+    historical_sl.update({
+        item: {
+            'usl': {state_dict[item]['usl']},
+            'lsl': state_dict[item]['lsl']
+        }
+    })
+
 
 banner = html.Div(
     id='banner',
@@ -66,14 +77,17 @@ tabs = html.Div(
 )
 
 tab_content_1 = html.Div(
-    html.Div(
+    className='six columns',
+    style={'border': '1px solid black'},
+    children=html.Div(
         id='form',
         children=
         [
-            html.P("Metrics"),
-
+            html.Button('Use historical values'),
+            html.Div(children=str(historical_sl)),
             # Display historical parameters, update options
-
+            # sigma display setting
+            html.B("Choose sigma limits display"),
             html.Br(),
             dcc.Checklist(
                 # Additional sigma limits can help you identify shifts and drifts or other patterns in the data.
@@ -497,8 +511,7 @@ def build_chart_panel():
             ),
 
             dcc.Store(
-                id='control-chart-state',
-                data=params[1]
+                id='control-chart-state'
             ),
             dcc.Graph(
                 id="control-chart-live",
