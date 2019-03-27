@@ -53,8 +53,8 @@ def root_layout():
                         className='button-primary'
                     ),
                     html.Div(
-                        id ='status-container',
-                        children =[
+                        id='status-container',
+                        children=[
                             daq.StopButton(id='stop-button')
                         ]
                     )
@@ -72,16 +72,6 @@ def root_layout():
             generate_modal()
         ]
     )
-
-
-@app.callback(
-    [Output('interval-component', 'disabled'),
-     Output('stop-button', 'buttonText')],
-    [Input('stop-button', 'n_clicks')],
-    state=[State('interval-component', 'disabled')]
-)
-def stop_production(_, current):
-    return not current, "stop" if current else "start measurement"
 
 
 def generate_modal():
@@ -116,7 +106,7 @@ def generate_modal():
                         Click on buttons in `Parameter' column to visualize details of measurement trendlines on the bottom panel.
                         
                         The Sparkline on top panel and Control chart on bottom panel show Shewhart process monitor using mock data. 
-                        The trend is updated every second to simulate real-time measurements. Data falling outside of six-sigma control limit are signals indicating 'Out of Control(OOC)', and will 
+                        The trend is updated every three seconds to simulate real-time measurements. Data falling outside of six-sigma control limit are signals indicating 'Out of Control(OOC)', and will 
                         trigger alerts instantly for a detailed checkup. 
                     ''')
                         )
@@ -424,11 +414,6 @@ def build_chart_panel():
 
 
 def generate_graph(interval, col):
-    # col = fig['data'][0]['name']
-
-    # if col != value:  # click
-    #     col = value
-    # else is interval
 
     stats = state_dict[col]
     col_data = stats['data']
@@ -438,6 +423,8 @@ def generate_graph(interval, col):
     lcl = stats['lcl']
     usl = stats['usl']
     lsl = stats['lsl']
+    minimum = stats['min']
+    maximum = stats['max']
 
     x_array = state_dict['Batch']['data'].tolist()
     y_array = col_data.tolist()
@@ -459,15 +446,26 @@ def generate_graph(interval, col):
             ooc_trace['x'].append(index + 1)
             ooc_trace['y'].append(data)
 
+    histo_trace = {
+        'x': x_array[:total_count],
+        'y': y_array[:total_count],
+        'type': 'histogram',
+        'orientation': 'h',
+        'name': 'Distribution',
+        'xaxis': 'x2',
+        'yaxis': 'y2'
+    }
+
     fig = {
         'data': [
             {
                 'x': x_array[:total_count],
                 'y': y_array[:total_count],
                 'mode': 'lines+markers',
-                'name': col},
-
-            ooc_trace
+                'name': col
+            },
+            ooc_trace,
+            histo_trace
         ]
     }
 
@@ -476,90 +474,105 @@ def generate_graph(interval, col):
     fig['layout'] = dict(title='Individual measurements', showlegend=True, xaxis={
         'zeroline': False,
         'title': 'Batch_Num',
-        'showline': False
+        'showline': False,
+        'domain': [0, 0.7]
     }, yaxis={
         'title': col,
         'autorange': True
     }, annotations=[
-        {'x': len_figure + 2, 'y': lcl, 'xref': 'x', 'yref': 'y', 'text': 'LCL:' + str(round(lcl, 2)),
+        {'x': len_figure + 4, 'y': lcl, 'xref': 'x', 'yref': 'y', 'text': 'LCL:' + str(round(lcl, 2)),
          'showarrow': True},
-        {'x': len_figure + 2, 'y': ucl, 'xref': 'x', 'yref': 'y', 'text': 'UCL: ' + str(round(ucl, 2)),
+        {'x': len_figure + 4, 'y': ucl, 'xref': 'x', 'yref': 'y', 'text': 'UCL: ' + str(round(ucl, 2)),
          'showarrow': True},
-        {'x': len_figure + 2, 'y': usl, 'xref': 'x', 'yref': 'y', 'text': 'USL: ' + str(round(usl, 2)),
+        {'x': len_figure + 4, 'y': usl, 'xref': 'x', 'yref': 'y', 'text': 'USL: ' + str(round(usl, 2)),
          'showarrow': True},
-        {'x': len_figure + 2, 'y': lsl, 'xref': 'x', 'yref': 'y', 'text': 'LSL: ' + str(round(lsl, 2)),
-         'showarrow': True}
-    ], shapes=[
-        {
-            'type': 'line',
-            'xref': 'x',
-            'yref': 'y',
-            'x0': 1,
-            'y0': usl,
-            'x1': len_figure + 2,
-            'y1': usl,
-            'line': {
-                'color': 'rgb(50, 171, 96)',
-                'width': 1,
-                'dash': 'dashdot'
-            }
-        },
-        {
-            'type': 'line',
-            'xref': 'x',
-            'yref': 'y',
-            'x0': 1,
-            'y0': lsl,
-            'x1': len_figure + 2,
-            'y1': lsl,
-            'line': {
-                'color': 'rgb(50, 171, 96)',
-                'width': 1,
-                'dash': 'dashdot'
-            }
-        },
-        {
-            'type': 'line',
-            'xref': 'x',
-            'yref': 'y',
-            'x0': 1,
-            'y0': ucl,
-            'x1': len_figure + 2,
-            'y1': ucl,
-            'line': {
-                'color': 'rgb(255,127,80)',
-                'width': 1,
-                'dash': 'dashdot'
-            }
-        },
-        {
-            'type': 'line',
-            'xref': 'x',
-            'yref': 'y',
-            'x0': 1,
-            'y0': mean,
-            'x1': len_figure + 2,
-            'y1': mean,
-            'line': {
-                'color': 'rgb(255,127,80)',
-                'width': 2
-            }
-        },
-        {
-            'type': 'line',
-            'xref': 'x',
-            'yref': 'y',
-            'x0': 1,
-            'y0': lcl,
-            'x1': len_figure + 2,
-            'y1': lcl,
-            'line': {
-                'color': 'rgb(255,127,80)',
-                'width': 1,
-                'dash': 'dashdot'
-            }
-        }
-    ])
+        {'x': len_figure + 4, 'y': lsl, 'xref': 'x', 'yref': 'y', 'text': 'LSL: ' + str(round(lsl, 2)),
+         'showarrow': True},
+        {'x': len_figure + 4, 'y': mean, 'xref': 'x', 'yref': 'y', 'text': 'Targeted mean: ' + str(round(mean, 2)),
+         'showarrow': False}
+    ],
+     shapes=[
+         {
+             'type': 'line',
+             'xref': 'x',
+             'yref': 'y',
+             'x0': 1,
+             'y0': usl,
+             'x1': len_figure + 2,
+             'y1': usl,
+             'line': {
+                 'color': 'rgb(50, 171, 96)',
+                 'width': 1,
+                 'dash': 'dashdot'
+             }
+         },
+         {
+             'type': 'line',
+             'xref': 'x',
+             'yref': 'y',
+             'x0': 1,
+             'y0': lsl,
+             'x1': len_figure + 2,
+             'y1': lsl,
+             'line': {
+                 'color': 'rgb(50, 171, 96)',
+                 'width': 1,
+                 'dash': 'dashdot'
+             }
+         },
+         {
+             'type': 'line',
+             'xref': 'x',
+             'yref': 'y',
+             'x0': 1,
+             'y0': ucl,
+             'x1': len_figure + 2,
+             'y1': ucl,
+             'line': {
+                 'color': 'rgb(255,127,80)',
+                 'width': 1,
+                 'dash': 'dashdot'
+             }
+         },
+         {
+             'type': 'line',
+             'xref': 'x',
+             'yref': 'y',
+             'x0': 1,
+             'y0': mean,
+             'x1': len_figure + 2,
+             'y1': mean,
+             'line': {
+                 'color': 'rgb(255,127,80)',
+                 'width': 2
+             }
+         },
+         {
+             'type': 'line',
+             'xref': 'x',
+             'yref': 'y',
+             'x0': 1,
+             'y0': lcl,
+             'x1': len_figure + 2,
+             'y1': lcl,
+             'line': {
+                 'color': 'rgb(255,127,80)',
+                 'width': 1,
+                 'dash': 'dashdot'
+             }
+         }
+     ],
+     xaxis2={
+         'title': 'count',
+         'domain': [0.8, 1]  # 70 to 100 % of width
+     },
+     yaxis2={
+         'title': 'value',
+         'anchor': 'x2',
+         'showticklabels': False
+     }
+
+     )
 
     return fig
 
@@ -572,6 +585,17 @@ def update_click_output(button_click, close_click):
         return {"display": "block"}
     else:
         return {"display": "none"}
+
+
+# Callbacks for stopping interval update
+@app.callback(
+    [Output('interval-component', 'disabled'),
+     Output('stop-button', 'buttonText')],
+    [Input('stop-button', 'n_clicks')],
+    state=[State('interval-component', 'disabled')]
+)
+def stop_production(_, current):
+    return not current, "stop" if current else "start measurement"
 
 
 #  ======= update each row at interval =========

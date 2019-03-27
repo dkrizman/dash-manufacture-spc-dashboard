@@ -4,12 +4,7 @@ import random
 df = pd.read_csv("data/spc_data.csv")  # 653 * 28 col
 
 
-def populate_ooc(col):
-    data = df[col]
-    stats = data.describe()
-    ucl = (stats['mean'] + 3 * stats['std']).tolist()
-    lcl = (stats['mean'] - 3 * stats['std']).tolist()
-
+def populate_ooc(data, ucl, lcl):
     ooc_count = 0
     ret = []
     for i in range(len(data)):
@@ -48,9 +43,9 @@ def init_df():
                 'lcl': lcl,
                 'usl': usl,
                 'lsl': lsl,
-                'min:': stats['min'].tolist(),
+                'min': stats['min'].tolist(),
                 'max': stats['max'].tolist(),
-                'ooc': populate_ooc(col)
+                'ooc': populate_ooc(data, ucl, lcl)
             }
         })
 
