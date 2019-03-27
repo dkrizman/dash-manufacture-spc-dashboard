@@ -8,7 +8,7 @@ import plotly.graph_objs as go
 import dash_daq as daq
 from textwrap import dedent
 
-from Data import df, state_dict, populate_ooc
+from Data import df, state_dict
 
 app = dash.Dash(__name__)
 server = app.server
@@ -26,48 +26,65 @@ suffix_ooc_n = '_OOC_number'
 suffix_ooc_g = '_OOC_graph'
 suffix_indicator = '_indicator'
 
+banner = html.Div(
+    id='banner',
+    className="banner",
+    children=[
+        html.H5('Manufacturing SPC Dashboard - Process Control and Exception Reporting'),
+        html.Button(
+            id='learn-more-button',
+            children="LEARN MORE",
+            n_clicks=0,
+            className='button-primary'),
+        html.Img(
+            src="https://s3-us-west-1.amazonaws.com/plotly-tutorials/logo/new-branding/dash-logo-by-plotly-stripe-inverted.png")
+    ]
+)
+
+tabs = html.Div(
+    id='tabs',
+    className='row container scalable',
+    children=[
+        dcc.Tabs(
+            id='app-tabs',
+            value='tab1',
+            children=[
+                dcc.Tab(
+                    label='Set measurement specifications',
+                    value='tab1'),
+                dcc.Tab(
+                    label='Control Charts Dashboard',
+                    value='tab2')])
+    ]
+)
+
+
+def load_page2_children():
+    return [
+        html.Div(
+            id='status-container',
+            children=[
+                daq.StopButton(id='stop-button'),
+                html.Div(id="Quick-stats", style={'display': 'none'})  # TODO : add some quickstats
+            ]
+        ),
+        build_top_panel(),
+        build_chart_panel(),
+    ]
+
 
 def root_layout():
     app.layout = html.Div(
         children=[
             # Banner
-            html.Div(
-                id='banner',
-                className="banner", children=[
-                    html.H5('Manufacturing SPC Dashboard - Process Control and Exception Reporting'),
-                    html.Img(
-                        src="https://s3-us-west-1.amazonaws.com/plotly-tutorials/logo/new-branding/dash-logo-by-plotly-stripe-inverted.png"
-                    )
-                ]
-            ),
-
+            banner,
             # Tabs
-            html.Div(
-                id='learn-more',
-                className='row container scalable',
-                children=[
-                    html.Button(
-                        id='learn-more-button',
-                        children="About this app",
-                        n_clicks=0,
-                        className='button-primary'
-                    ),
-                    html.Div(
-                        id='status-container',
-                        children=[
-                            daq.StopButton(id='stop-button')
-                        ]
-                    )
-                ]
-            ),
+            tabs,
             # Main app
             html.Div(
                 id='app-content',
                 className='container scalable',
-                children=[
-                    build_top_panel(),
-                    build_chart_panel(),
-                ]
+                children=load_page2_children()
             ),
             generate_modal()
         ]
@@ -414,7 +431,6 @@ def build_chart_panel():
 
 
 def generate_graph(interval, col):
-
     stats = state_dict[col]
     col_data = stats['data']
     count = stats['count']
@@ -480,99 +496,99 @@ def generate_graph(interval, col):
         'title': col,
         'autorange': True
     }, annotations=[
-        {'x': len_figure + 4, 'y': lcl, 'xref': 'x', 'yref': 'y', 'text': 'LCL:' + str(round(lcl, 2)),
+        {'x': len_figure + 2, 'y': lcl, 'xref': 'x', 'yref': 'y', 'text': 'LCL:' + str(round(lcl, 2)),
          'showarrow': True},
-        {'x': len_figure + 4, 'y': ucl, 'xref': 'x', 'yref': 'y', 'text': 'UCL: ' + str(round(ucl, 2)),
+        {'x': len_figure + 2, 'y': ucl, 'xref': 'x', 'yref': 'y', 'text': 'UCL: ' + str(round(ucl, 2)),
          'showarrow': True},
-        {'x': len_figure + 4, 'y': usl, 'xref': 'x', 'yref': 'y', 'text': 'USL: ' + str(round(usl, 2)),
+        {'x': len_figure + 2, 'y': usl, 'xref': 'x', 'yref': 'y', 'text': 'USL: ' + str(round(usl, 2)),
          'showarrow': True},
-        {'x': len_figure + 4, 'y': lsl, 'xref': 'x', 'yref': 'y', 'text': 'LSL: ' + str(round(lsl, 2)),
+        {'x': len_figure + 2, 'y': lsl, 'xref': 'x', 'yref': 'y', 'text': 'LSL: ' + str(round(lsl, 2)),
          'showarrow': True},
-        {'x': len_figure + 4, 'y': mean, 'xref': 'x', 'yref': 'y', 'text': 'Targeted mean: ' + str(round(mean, 2)),
+        {'x': len_figure + 2, 'y': mean, 'xref': 'x', 'yref': 'y', 'text': 'Targeted mean: ' + str(round(mean, 2)),
          'showarrow': False}
     ],
-     shapes=[
-         {
-             'type': 'line',
-             'xref': 'x',
-             'yref': 'y',
-             'x0': 1,
-             'y0': usl,
-             'x1': len_figure + 2,
-             'y1': usl,
-             'line': {
-                 'color': 'rgb(50, 171, 96)',
-                 'width': 1,
-                 'dash': 'dashdot'
-             }
-         },
-         {
-             'type': 'line',
-             'xref': 'x',
-             'yref': 'y',
-             'x0': 1,
-             'y0': lsl,
-             'x1': len_figure + 2,
-             'y1': lsl,
-             'line': {
-                 'color': 'rgb(50, 171, 96)',
-                 'width': 1,
-                 'dash': 'dashdot'
-             }
-         },
-         {
-             'type': 'line',
-             'xref': 'x',
-             'yref': 'y',
-             'x0': 1,
-             'y0': ucl,
-             'x1': len_figure + 2,
-             'y1': ucl,
-             'line': {
-                 'color': 'rgb(255,127,80)',
-                 'width': 1,
-                 'dash': 'dashdot'
-             }
-         },
-         {
-             'type': 'line',
-             'xref': 'x',
-             'yref': 'y',
-             'x0': 1,
-             'y0': mean,
-             'x1': len_figure + 2,
-             'y1': mean,
-             'line': {
-                 'color': 'rgb(255,127,80)',
-                 'width': 2
-             }
-         },
-         {
-             'type': 'line',
-             'xref': 'x',
-             'yref': 'y',
-             'x0': 1,
-             'y0': lcl,
-             'x1': len_figure + 2,
-             'y1': lcl,
-             'line': {
-                 'color': 'rgb(255,127,80)',
-                 'width': 1,
-                 'dash': 'dashdot'
-             }
-         }
-     ],
-     xaxis2={
-         'title': 'count',
-         'domain': [0.8, 1]  # 70 to 100 % of width
-     },
-     yaxis2={
-         'title': 'value',
-         'anchor': 'x2',
-         'showticklabels': False
-     }
+                         shapes=[
+                             {
+                                 'type': 'line',
+                                 'xref': 'x',
+                                 'yref': 'y',
+                                 'x0': 1,
+                                 'y0': usl,
+                                 'x1': len_figure + 2,
+                                 'y1': usl,
+                                 'line': {
+                                     'color': 'rgb(50, 171, 96)',
+                                     'width': 1,
+                                     'dash': 'dashdot'
+                                 }
+                             },
+                             {
+                                 'type': 'line',
+                                 'xref': 'x',
+                                 'yref': 'y',
+                                 'x0': 1,
+                                 'y0': lsl,
+                                 'x1': len_figure + 2,
+                                 'y1': lsl,
+                                 'line': {
+                                     'color': 'rgb(50, 171, 96)',
+                                     'width': 1,
+                                     'dash': 'dashdot'
+                                 }
+                             },
+                             {
+                                 'type': 'line',
+                                 'xref': 'x',
+                                 'yref': 'y',
+                                 'x0': 1,
+                                 'y0': ucl,
+                                 'x1': len_figure + 2,
+                                 'y1': ucl,
+                                 'line': {
+                                     'color': 'rgb(255,127,80)',
+                                     'width': 1,
+                                     'dash': 'dashdot'
+                                 }
+                             },
+                             {
+                                 'type': 'line',
+                                 'xref': 'x',
+                                 'yref': 'y',
+                                 'x0': 1,
+                                 'y0': mean,
+                                 'x1': len_figure + 2,
+                                 'y1': mean,
+                                 'line': {
+                                     'color': 'rgb(255,127,80)',
+                                     'width': 2
+                                 }
+                             },
+                             {
+                                 'type': 'line',
+                                 'xref': 'x',
+                                 'yref': 'y',
+                                 'x0': 1,
+                                 'y0': lcl,
+                                 'x1': len_figure + 2,
+                                 'y1': lcl,
+                                 'line': {
+                                     'color': 'rgb(255,127,80)',
+                                     'width': 1,
+                                     'dash': 'dashdot'
+                                 }
+                             }
+                         ],
+                         xaxis2={
+                             'title': 'count',
+                             'domain': [0.8, 1]  # 70 to 100 % of width
+                         },
+                         yaxis2={
+                             'title': 'value',
+                             'anchor': 'x2',
+                             'showticklabels': False
+                         }
 
-     )
+                         )
 
     return fig
 
@@ -595,7 +611,7 @@ def update_click_output(button_click, close_click):
     state=[State('interval-component', 'disabled')]
 )
 def stop_production(_, current):
-    return not current, "stop" if current else "start measurement"
+    return not current, "stop" if current else "start"
 
 
 #  ======= update each row at interval =========

@@ -25,6 +25,10 @@
     text-transform:uppercase;
 }
 
+.banner button{
+    margin-left: 5%;
+}
+
 .banner Img {
     position: relative;
     float: right;
