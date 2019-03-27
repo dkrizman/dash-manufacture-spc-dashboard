@@ -50,27 +50,45 @@ tabs = html.Div(
             value='tab1',
             children=[
                 dcc.Tab(
-                    label='Set measurement specifications',
-                    value='tab1'),
+                    id='specs-tab',
+                    label='Set Specifications',
+                    value='tab1',
+                    disabled=False
+                ),
                 dcc.Tab(
+                    id='Control-chart-tab',
                     label='Control Charts Dashboard',
-                    value='tab2')])
+                    value='tab2',
+                    disabled=False)
+            ]
+        )
     ]
 )
 
+tab_content_1 = html.Div(
+    html.Div(
+        id='form',
+        children=
+        [
+            html.P("Metrics"),
 
-def load_page2_children():
-    return [
-        html.Div(
-            id='status-container',
-            children=[
-                daq.StopButton(id='stop-button'),
-                html.Div(id="Quick-stats", style={'display': 'none'})  # TODO : add some quickstats
-            ]
-        ),
-        build_top_panel(),
-        build_chart_panel(),
-    ]
+            # Display historical parameters, update options
+
+            html.Br(),
+            dcc.Checklist(
+                # Additional sigma limits can help you identify shifts and drifts or other patterns in the data.
+                id='sigma-checklist',
+                options=[
+                    {'label': 'Three sigma', 'value': 'three-sigma'},
+                    {'label': 'Two sigma', 'value': 'two-sigma'},
+                    {'label': 'One sigma', 'value': 'one-sigma'},
+                ],
+                values=['three-sigma', 'two-sigma']
+            )
+        ]
+
+    )
+)
 
 
 def root_layout():
@@ -83,10 +101,72 @@ def root_layout():
             # Main app
             html.Div(
                 id='app-content',
-                className='container scalable',
-                children=load_page2_children()
+                className='container scalable'
             ),
             generate_modal()
+        ]
+    )
+
+
+@app.callback(
+    output=Output('app-content', 'children'),
+    inputs=[Input('app-tabs', 'value')]
+)
+def render_content(tab):
+    if tab == 'tab1':
+        return tab_content_1
+    elif tab == 'tab2':
+        return [
+            html.Div(
+                id='status-container',
+                children=[
+                    build_quick_stats_panel(),
+                    build_top_panel(),
+                    build_chart_panel(),
+                ]
+            )
+        ]
+
+
+def build_quick_stats_panel():
+    return html.Div(
+        id="Quick-stats",
+        style={'height': '25vh'},
+        className='row',
+        children=
+        [
+            html.Div(
+                id="card-1",
+                className='four columns',
+                children=[
+                    html.H5("Total Processes"),
+                    html.Span("5")
+                ]
+            ),
+
+            html.Div(
+                id='card-2',
+                className='four columns',
+                children=[
+                    html.H5("Time to completion"),
+                    daq.Gauge(
+                        id='progress-gauge',
+                        value=0,
+                        size=150,
+                        max=max_length,
+                        min=0,
+                    )
+                ]
+            ),
+
+            html.Div(
+                id='utility-card',
+                className='four columns',
+                children=[
+                    daq.StopButton(id='stop-button', size=160, buttonText='start'),
+                    html.Button(id='print-report', children='print report')
+                ]
+            )
         ]
     )
 
@@ -177,6 +257,7 @@ def build_top_panel():
 
             # Piechart
             html.Div(
+                id='ooc-piechart-outer',
                 className='four columns',
                 children=[
                     generate_section_banner('% OOC per Parameter'),
@@ -412,7 +493,7 @@ def build_chart_panel():
                 id='interval-component',
                 interval=3 * 1000,  # in milliseconds
                 n_intervals=0,
-                disabled=False
+                disabled=True
             ),
 
             dcc.Store(
@@ -507,88 +588,87 @@ def generate_graph(interval, col):
         {'x': len_figure + 2, 'y': mean, 'xref': 'x', 'yref': 'y', 'text': 'Targeted mean: ' + str(round(mean, 2)),
          'showarrow': False}
     ],
-                         shapes=[
-                             {
-                                 'type': 'line',
-                                 'xref': 'x',
-                                 'yref': 'y',
-                                 'x0': 1,
-                                 'y0': usl,
-                                 'x1': len_figure + 2,
-                                 'y1': usl,
-                                 'line': {
-                                     'color': 'rgb(50, 171, 96)',
-                                     'width': 1,
-                                     'dash': 'dashdot'
-                                 }
-                             },
-                             {
-                                 'type': 'line',
-                                 'xref': 'x',
-                                 'yref': 'y',
-                                 'x0': 1,
-                                 'y0': lsl,
-                                 'x1': len_figure + 2,
-                                 'y1': lsl,
-                                 'line': {
-                                     'color': 'rgb(50, 171, 96)',
-                                     'width': 1,
-                                     'dash': 'dashdot'
-                                 }
-                             },
-                             {
-                                 'type': 'line',
-                                 'xref': 'x',
-                                 'yref': 'y',
-                                 'x0': 1,
-                                 'y0': ucl,
-                                 'x1': len_figure + 2,
-                                 'y1': ucl,
-                                 'line': {
-                                     'color': 'rgb(255,127,80)',
-                                     'width': 1,
-                                     'dash': 'dashdot'
-                                 }
-                             },
-                             {
-                                 'type': 'line',
-                                 'xref': 'x',
-                                 'yref': 'y',
-                                 'x0': 1,
-                                 'y0': mean,
-                                 'x1': len_figure + 2,
-                                 'y1': mean,
-                                 'line': {
-                                     'color': 'rgb(255,127,80)',
-                                     'width': 2
-                                 }
-                             },
-                             {
-                                 'type': 'line',
-                                 'xref': 'x',
-                                 'yref': 'y',
-                                 'x0': 1,
-                                 'y0': lcl,
-                                 'x1': len_figure + 2,
-                                 'y1': lcl,
-                                 'line': {
-                                     'color': 'rgb(255,127,80)',
-                                     'width': 1,
-                                     'dash': 'dashdot'
-                                 }
-                             }
-                         ],
-                         xaxis2={
-                             'title': 'count',
-                             'domain': [0.8, 1]  # 70 to 100 % of width
-                         },
-                         yaxis2={
-                             'title': 'value',
-                             'anchor': 'x2',
-                             'showticklabels': False
-                         }
-
-                         )
+    shapes=[
+        {
+            'type': 'line',
+            'xref': 'x',
+            'yref': 'y',
+            'x0': 1,
+            'y0': usl,
+            'x1': len_figure + 2,
+            'y1': usl,
+            'line': {
+                'color': 'rgb(50, 171, 96)',
+                'width': 1,
+                'dash': 'dashdot'
+            }
+        },
+        {
+            'type': 'line',
+            'xref': 'x',
+            'yref': 'y',
+            'x0': 1,
+            'y0': lsl,
+            'x1': len_figure + 2,
+            'y1': lsl,
+            'line': {
+                'color': 'rgb(50, 171, 96)',
+                'width': 1,
+                'dash': 'dashdot'
+            }
+        },
+        {
+            'type': 'line',
+            'xref': 'x',
+            'yref': 'y',
+            'x0': 1,
+            'y0': ucl,
+            'x1': len_figure + 2,
+            'y1': ucl,
+            'line': {
+                'color': 'rgb(255,127,80)',
+                'width': 1,
+                'dash': 'dashdot'
+            }
+        },
+        {
+            'type': 'line',
+            'xref': 'x',
+            'yref': 'y',
+            'x0': 1,
+            'y0': mean,
+            'x1': len_figure + 2,
+            'y1': mean,
+            'line': {
+                'color': 'rgb(255,127,80)',
+                'width': 2
+            }
+        },
+        {
+            'type': 'line',
+            'xref': 'x',
+            'yref': 'y',
+            'x0': 1,
+            'y0': lcl,
+            'x1': len_figure + 2,
+            'y1': lcl,
+            'line': {
+                'color': 'rgb(255,127,80)',
+                'width': 1,
+                'dash': 'dashdot'
+            }
+        }
+    ],
+     xaxis2={
+         'title': 'count',
+         'domain': [0.8, 1]  # 70 to 100 % of width
+     },
+     yaxis2={
+         'title': 'value',
+         'anchor': 'x2',
+         'showticklabels': False
+     }
+     )
 
     return fig
 
@@ -614,7 +694,21 @@ def stop_production(_, current):
     return not current, "stop" if current else "start"
 
 
-#  ======= update each row at interval =========
+# ======= update progress gauge =========
+@app.callback(
+    output=Output('progress-gauge', 'value'),
+    inputs=[Input('interval-component', 'n_intervals')]
+)
+def update_gauge(interval):
+    if interval < max_length:
+        total_count = interval
+    else:
+        total_count = max_length
+
+    return int(total_count)
+
+
+# ======= update each row at interval =========
 @app.callback(
     output=[
         Output('Para1' + suffix_count, 'children'),
@@ -623,7 +717,7 @@ def stop_production(_, current):
         Output('Para1' + suffix_ooc_g, 'value'),
         Output('Para1' + suffix_indicator, 'color')
     ],
-    inputs=[Input('interval-component', 'n_intervals')],
+    inputs=[Input('interval-component', 'n_intervals')]
 )
 def update_param1_row(interval):
     count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Para1')

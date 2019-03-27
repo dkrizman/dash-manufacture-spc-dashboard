@@ -20,12 +20,12 @@
     margin-left: 5%;
     display: inline-block;
     font-family: 'Open Sans', sans-serif;
-    font-size:2rem;
-    line-height:1;
-    text-transform:uppercase;
+    font-size: 2rem;
+    line-height: 1;
+    text-transform: uppercase;
 }
 
-.banner button{
+.banner button {
     margin-left: 5%;
 }
 
@@ -37,12 +37,10 @@
 }
 
 .section-banner {
-    background-color:#F5F5F5;
+    background-color: #F5F5F5;
     color: #2a3f5f;
     text-align: center;
     font-weight: bold;
-    border-radius: 10px;
-    box-shadow: 0 3px 2px 2px #2a3f5f;
     padding: 5px 5px;
     height: 30px;
 }
@@ -54,6 +52,7 @@
 #metric_header > div {
     font-weight: bold;
 }
+
 /* Scalable Container
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 .container.scalable {
@@ -64,14 +63,14 @@
 /* Remove Undo
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 ._dash-undo-redo {
-  display: none;
+    display: none;
 }
 
 #learn-more-button {
     background-color: #0D76BF;
 }
 
-#Para1_button, #Para2_button, #Para3_button, #Para4_button, #Para5_button{
+#Para1_button, #Para2_button, #Para3_button, #Para4_button, #Para5_button {
     padding: 0px 0px;
 }
 
@@ -95,7 +94,6 @@
     margin: 10% auto;
     padding: 10px 15px;
     background-color: #F9F9F9;
-    border-radius: 10px;
 }
 
 .close-container {
@@ -109,6 +107,80 @@
     padding: 0 15px;
     font-weight: normal;
     float: right;
-    height:100%;
-    border:none;
+    height: 100%;
+    border: none;
+}
+
+.quick-stats-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+}
+
+#metric-summary-session, #ooc-piechart-outer, #control-chart-container {
+    border: 1px solid #F5F5F5;
+    border-radius: 10px;
+}
+
+#card-1, #card-2{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    justify-content: flex-start;
+}
+
+#utility-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    justify-content: space-evenly;
+}
+
+#stop-button > div > button {
+    font-size: 16px;
+    border-radius:4px;
+    height:40px;
+}
+
+#print-report {
+    height: 40px;
+    border-radius: 4px;
+    background-color: #2a3f5f;
+    color: #F5F5F5;
+}
+
+
+#card-1 h5, #card-2 h5 {
+    font-weight: 700;
+    color: #2a3f5f;
+}
+
+#card1 span {
+    font-size: 25px;
+    color: #0D76BF;
+}
+
+@media print {
+
+    html, body {
+        page-break-after: avoid !important;
+        page-break-before: avoid !important;
+    }
+
+    #learn-more-button {
+        visibility: hidden;
+    }
+
+    .banner Img {
+        height: 30px;
+    }
+
+    .app-content {
+        margin: 1.25in;
+        page-break-after: always;
+        page-break-before: auto;
+        border: solid 1px rgba(0, 0, 0, 0)
+    }
 }
