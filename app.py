@@ -18,53 +18,8 @@ app.config['suppress_callback_exceptions'] = True
 
 df = pd.read_csv("data/spc_data.csv")
 
-
-def init_df():
-    ret = {}
-    for col in list(df[1:]):
-        data = df[col]
-        stats = data.describe()
-
-        std = stats['std'].tolist()
-        ucl = (stats['mean'] + 3 * stats['std']).tolist()
-        lcl = (stats['mean'] - 3 * stats['std']).tolist()
-        usl = (stats['mean'] + stats['std']).tolist()
-        lsl = (stats['mean'] - stats['std']).tolist()
-
-        ret.update({
-            col: {
-                'count': stats['count'].tolist(),
-                'data': data,
-                'mean': stats['mean'].tolist(),
-                'std': std,
-                'ucl': round(ucl, 3),
-                'lcl': round(lcl, 3),
-                'usl': round(usl, 3),
-                'lsl': round(lsl, 3),
-                'min': stats['min'].tolist(),
-                'max': stats['max'].tolist(),
-                'ooc': populate_ooc(data, ucl, lcl)
-            }
-        })
-
-    return ret
-
-
-def populate_ooc(data, ucl, lcl):
-    ooc_count = 0
-    ret = []
-    for i in range(len(data)):
-        if data[i] >= ucl or data[i] <= lcl:
-            ooc_count += 1
-            ret.append(ooc_count / (i + 1))
-        else:
-            ret.append(ooc_count / (i + 1))
-    return ret
-
-state_dict = init_df()
 params = list(df)
 max_length = len(df)
-
 
 suffix_row = '_row'
 suffix_button_id = '_button'
@@ -138,6 +93,52 @@ def build_tabs():
             )
         ]
     )
+
+
+def init_df():
+    ret = {}
+    for col in list(df[1:]):
+        data = df[col]
+        stats = data.describe()
+
+        std = stats['std'].tolist()
+        ucl = (stats['mean'] + 3 * stats['std']).tolist()
+        lcl = (stats['mean'] - 3 * stats['std']).tolist()
+        usl = (stats['mean'] + stats['std']).tolist()
+        lsl = (stats['mean'] - stats['std']).tolist()
+
+        ret.update({
+            col: {
+                'count': stats['count'].tolist(),
+                'data': data,
+                'mean': stats['mean'].tolist(),
+                'std': std,
+                'ucl': round(ucl, 3),
+                'lcl': round(lcl, 3),
+                'usl': round(usl, 3),
+                'lsl': round(lsl, 3),
+                'min': stats['min'].tolist(),
+                'max': stats['max'].tolist(),
+                'ooc': populate_ooc(data, ucl, lcl)
+            }
+        })
+
+    return ret
+
+
+def populate_ooc(data, ucl, lcl):
+    ooc_count = 0
+    ret = []
+    for i in range(len(data)):
+        if data[i] >= ucl or data[i] <= lcl:
+            ooc_count += 1
+            ret.append(ooc_count / (i + 1))
+        else:
+            ret.append(ooc_count / (i + 1))
+    return ret
+
+
+state_dict = init_df()
 
 
 def init_value_setter_store():
@@ -246,6 +247,9 @@ def set_value_setter_store(set_btn, param, data, usl, lsl, ucl, lcl):
         data[param]['lsl'] = lsl
         data[param]['ucl'] = ucl
         data[param]['lcl'] = lcl
+
+        # Recalculate ooc in case of param updates
+        data[param]['ooc'] = populate_ooc(df[param], ucl, lcl)
         return data
 
 
@@ -877,10 +881,11 @@ def update_gauge(interval):
         Output('Para1' + suffix_ooc_g, 'value'),
         Output('Para1' + suffix_indicator, 'color')
     ],
-    inputs=[Input('interval-component', 'n_intervals')]
+    inputs=[Input('interval-component', 'n_intervals')],
+    state=[State('value-setter-store', 'data')]
 )
-def update_param1_row(interval):
-    count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Para1')
+def update_param1_row(interval, stored_data):
+    count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Para1', stored_data)
     spark_line_graph = update_spark_line_graph(interval, 'Para1')
     return count, spark_line_graph, ooc_n, ooc_g_value, indicator
 
@@ -894,9 +899,10 @@ def update_param1_row(interval):
         Output('Para2' + suffix_indicator, 'color')
     ],
     inputs=[Input('interval-component', 'n_intervals')],
+    state=[State('value-setter-store', 'data')]
 )
-def update_param1_row(interval):
-    count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Para2')
+def update_param2_row(interval, stored_data):
+    count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Para2', stored_data)
     spark_line_graph = update_spark_line_graph(interval, 'Para2')
     return count, spark_line_graph, ooc_n, ooc_g_value, indicator
 
@@ -910,9 +916,10 @@ def update_param1_row(interval):
         Output('Para3' + suffix_indicator, 'color')
     ],
     inputs=[Input('interval-component', 'n_intervals')],
+    state=[State('value-setter-store', 'data')]
 )
-def update_param1_row(interval):
-    count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Para3')
+def update_param3_row(interval, stored_data):
+    count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Para3', stored_data)
     spark_line_graph = update_spark_line_graph(interval, 'Para3')
     return count, spark_line_graph, ooc_n, ooc_g_value, indicator
 
@@ -926,9 +933,10 @@ def update_param1_row(interval):
         Output('Para4' + suffix_indicator, 'color')
     ],
     inputs=[Input('interval-component', 'n_intervals')],
+    state=[State('value-setter-store', 'data')]
 )
-def update_param1_row(interval):
-    count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Para4')
+def update_param4_row(interval, stored_data):
+    count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Para4', stored_data)
     spark_line_graph = update_spark_line_graph(interval, 'Para4')
     return count, spark_line_graph, ooc_n, ooc_g_value, indicator
 
@@ -942,9 +950,10 @@ def update_param1_row(interval):
         Output('Para5' + suffix_indicator, 'color')
     ],
     inputs=[Input('interval-component', 'n_intervals')],
+    state=[State('value-setter-store', 'data')]
 )
-def update_param1_row(interval):
-    count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Para5')
+def update_param5_row(interval, stored_data):
+    count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Para5', stored_data)
     spark_line_graph = update_spark_line_graph(interval, 'Para5')
     return count, spark_line_graph, ooc_n, ooc_g_value, indicator
 
@@ -1008,13 +1017,16 @@ def update_spark_line_graph(interval, col):
 
 
 # Update batch num, ooc percentage, ooc_grad_value and indicator color
-def update_count(interval, col):
+def update_count(interval, col, data):
+    if interval == 0:
+        return '0', '0.00%', 0, '#00cc96'
+
     if interval >= max_length:
         total_count = max_length - 1
     else:
         total_count = interval
 
-    ooc_percentage_f = state_dict[col]['ooc'][total_count] * 100  # todo : calculate ooc with stated dcc store data.
+    ooc_percentage_f = data[col]['ooc'][total_count] * 100  # todo : calculate ooc with stated dcc store data.
     ooc_percentage_str = "%.2f" % ooc_percentage_f + '%'
 
     if ooc_percentage_f > 15:
