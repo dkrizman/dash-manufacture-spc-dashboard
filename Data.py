@@ -25,13 +25,8 @@ def init_df():
         std = stats['std'].tolist()
         ucl = (stats['mean'] + 3 * stats['std']).tolist()
         lcl = (stats['mean'] - 3 * stats['std']).tolist()
-
-        # Generate random number for Specification Limits
-        rand1 = random.random()
-        rand2 = random.random()
-
-        usl = ucl + (1 + rand1) * std
-        lsl = lcl - (1 + rand2) * std
+        usl = (stats['mean'] + stats['std']).tolist()
+        lsl = (stats['mean'] - stats['std']).tolist()
 
         ret.update({
             col: {

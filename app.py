@@ -11,7 +11,8 @@ from textwrap import dedent
 
 from Data import df, state_dict
 
-app = dash.Dash(__name__)
+external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 server = app.server
 app.scripts.config.serve_locally = True
 app.config['suppress_callback_exceptions'] = True
@@ -27,99 +28,188 @@ suffix_ooc_n = '_OOC_number'
 suffix_ooc_g = '_OOC_graph'
 suffix_indicator = '_indicator'
 
-historical_sl = {}
-for item in params[1:]:
-    historical_sl.update({
-        item: {
-            'usl': {state_dict[item]['usl']},
-            'lsl': state_dict[item]['lsl']
-        }
-    })
-
-
-banner = html.Div(
-    id='banner',
-    className="banner",
-    children=[
-        html.H5('Manufacturing SPC Dashboard - Process Control and Exception Reporting'),
-        html.Button(
-            id='learn-more-button',
-            children="LEARN MORE",
-            n_clicks=0,
-            className='button-primary'),
-        html.Img(
-            src="https://s3-us-west-1.amazonaws.com/plotly-tutorials/logo/new-branding/dash-logo-by-plotly-stripe-inverted.png")
-    ]
-)
-
-tabs = html.Div(
-    id='tabs',
-    className='row container scalable',
-    children=[
-        dcc.Tabs(
-            id='app-tabs',
-            value='tab1',
-            children=[
-                dcc.Tab(
-                    id='specs-tab',
-                    label='Set Specifications',
-                    value='tab1',
-                    disabled=False
-                ),
-                dcc.Tab(
-                    id='Control-chart-tab',
-                    label='Control Charts Dashboard',
-                    value='tab2',
-                    disabled=False)
-            ]
-        )
-    ]
-)
-
-tab_content_1 = html.Div(
-    className='six columns',
-    style={'border': '1px solid black'},
-    children=html.Div(
-        id='form',
-        children=
-        [
-            html.Button('Use historical values'),
-            html.Div(children=str(historical_sl)),
-            # Display historical parameters, update options
-            # sigma display setting
-            html.B("Choose sigma limits display"),
-            html.Br(),
-            dcc.Checklist(
-                # Additional sigma limits can help you identify shifts and drifts or other patterns in the data.
-                id='sigma-checklist',
-                options=[
-                    {'label': 'Three sigma', 'value': 'three-sigma'},
-                    {'label': 'Two sigma', 'value': 'two-sigma'},
-                    {'label': 'One sigma', 'value': 'one-sigma'},
-                ],
-                values=['three-sigma', 'two-sigma']
-            )
-        ]
-
-    )
-)
-
 
 def root_layout():
     app.layout = html.Div(
         children=[
             # Banner
-            banner,
+            build_banner(),
             # Tabs
-            tabs,
+            build_tabs(),
             # Main app
             html.Div(
                 id='app-content',
                 className='container scalable'
             ),
-            generate_modal()
+            generate_modal(),
+            html.Button('Proceed to measure', id='tab-trigger-btn', n_clicks=0, style={'display':'inline'}),
+            dcc.Store(
+                id='value-setter-store',
+                data=init_value_setter_store()
+            )
         ]
     )
+
+
+def build_banner():
+    return html.Div(
+        id='banner',
+        className="banner",
+        children=[
+            html.H5('Manufacturing SPC Dashboard - Process Control and Exception Reporting'),
+            html.Button(
+                id='learn-more-button',
+                children="LEARN MORE",
+                n_clicks=0,
+                className='button-primary'),
+            html.Img(
+                src="https://s3-us-west-1.amazonaws.com/plotly-tutorials/logo/new-branding/dash-logo-by-plotly-stripe-inverted.png")
+        ]
+    )
+
+
+def build_tabs():
+    return html.Div(
+        id='tabs',
+        className='row container scalable',
+        children=[
+            dcc.Tabs(
+                id='app-tabs',
+                value='tab1',
+                children=[
+                    dcc.Tab(
+                        id='Specs-tab',
+                        label='Set Specifications',
+                        value='tab1',
+                        disabled=False
+                    ),
+                    dcc.Tab(
+                        id='Control-chart-tab',
+                        label='Control Charts Dashboard',
+                        value='tab2',
+                        disabled=False)
+                ]
+            )
+        ]
+    )
+
+
+def init_value_setter_store():
+    # Initialize store data
+    ret = {}
+    for param in params[1:]:
+        ret.update({
+            param: {
+                'usl': state_dict[param]['usl'],
+                'lsl': state_dict[param]['lsl'],
+                'ucl': state_dict[param]['ucl'],
+                'lcl': state_dict[param]['lcl']
+            }
+        })
+    return ret
+
+
+def build_tab_1():
+    return [
+        html.Div(
+            className='four columns',
+            children=html.Div(
+                'list'
+            )
+            # manual change list
+        ),
+        html.Div(
+            className='six columns',
+            children=[
+                html.Label('Choose Parameters'),
+                dcc.Dropdown(
+                    id='value-setter-dropdown',
+                    options=list({'label': param, 'value': param} for param in params[1:]),
+                    value=params[1]
+                ),
+                html.Div(
+                    id='value-setter-panel',
+                ),
+                html.Button('Set', id='value-setter-set-btn'),
+                html.Div(id='test')
+            ]
+        )
+    ]
+
+
+ud_usl_input = daq.NumericInput(id='ud_usl_input', size=200, max=9999999, style={'width': '100%', 'height': '100%'})
+ud_lsl_input = daq.NumericInput(id='ud_lsl_input', size=200, max=9999999, style={'width': '100%', 'height': '100%'})
+ud_ucl_input = daq.NumericInput(id='ud_ucl_input', size=200, max=9999999, style={'width': '100%', 'height': '100%'})
+ud_lcl_input = daq.NumericInput(id='ud_lcl_input', size=200, max=9999999, style={'width': '100%', 'height': '100%'})
+
+
+@app.callback(
+    output=[
+        Output('value-setter-panel', 'children'),
+        Output('ud_usl_input', 'value'),
+        Output('ud_lsl_input', 'value'),
+        Output('ud_ucl_input', 'value'),
+        Output('ud_lcl_input', 'value')],
+    inputs=[Input('value-setter-dropdown', 'value')],
+    state=[State('value-setter-store', 'data')]
+)
+def build_value_setter_panel(dd_value, state_value):
+    return [
+               html.Label(dd_value),
+               build_value_setter_line('spec', 'historical value', 'user defined value'),
+               build_value_setter_line('Upper Specification limit', state_dict[dd_value]['usl'], ud_usl_input),
+               build_value_setter_line('Lower Specification limit', state_dict[dd_value]['lsl'], ud_lsl_input),
+               build_value_setter_line('Upper Control limit', state_dict[dd_value]['ucl'], ud_ucl_input),
+               build_value_setter_line('Lower Control limit', state_dict[dd_value]['lcl'], ud_lcl_input)
+           ], state_value[dd_value]['usl'], state_value[dd_value]['lsl'], state_value[dd_value]['ucl'], \
+           state_value[dd_value]['lcl']
+
+
+def build_value_setter_line(label, value, col3):
+    return html.Div(
+        children=[
+            html.Label(label, className='four columns'),
+            html.Label(value, className='four columns'),
+            html.Div(col3, className='four columns')],
+        className='row'
+    )
+
+
+@app.callback(
+    output=Output('value-setter-store', 'data'),
+    inputs=[
+        Input('value-setter-set-btn', 'n_clicks')
+    ],
+    state=[
+        State('value-setter-dropdown', 'value'),
+        State('value-setter-store', 'data'),
+        State('ud_usl_input', 'value'),
+        State('ud_lsl_input', 'value'),
+        State('ud_ucl_input', 'value'),
+        State('ud_lcl_input', 'value'),
+    ]
+)
+def set_value_setter_store(set_btn, param, data, usl, lsl, ucl, lcl):
+    if set_btn is None:
+        return data
+    else:
+        data[param]['usl'] = usl
+        data[param]['lsl'] = lsl
+        data[param]['ucl'] = ucl
+        data[param]['lcl'] = lcl
+        return data
+
+
+@app.callback(
+    output=[Output('app-tabs', 'value'), Output('tab-trigger-btn', 'style')],
+    inputs=[Input('tab-trigger-btn', 'n_clicks')],
+    state=[State('tab-trigger-btn', 'style')]
+)
+def switch_tab(n_clicks, style):
+    if n_clicks > 0:
+        style['display'] = 'none'
+        return ['tab2', style]
+    return ['tab1', style]
 
 
 @app.callback(
@@ -128,7 +218,7 @@ def root_layout():
 )
 def render_content(tab):
     if tab == 'tab1':
-        return tab_content_1
+        return build_tab_1()
     elif tab == 'tab2':
         return [
             html.Div(
@@ -524,17 +614,14 @@ def build_chart_panel():
     )
 
 
-def generate_graph(interval, col):
+def generate_graph(interval, specs_dict, col):
     stats = state_dict[col]
     col_data = stats['data']
-    count = stats['count']
     mean = stats['mean']
-    ucl = stats['ucl']
-    lcl = stats['lcl']
-    usl = stats['usl']
-    lsl = stats['lsl']
-    minimum = stats['min']
-    maximum = stats['max']
+    ucl = specs_dict[col]['ucl']
+    lcl = specs_dict[col]['lcl']
+    usl = specs_dict[col]['usl']
+    lsl = specs_dict[col]['lsl']
 
     x_array = state_dict['Batch']['data'].tolist()
     y_array = col_data.tolist()
@@ -581,107 +668,117 @@ def generate_graph(interval, col):
 
     len_figure = len(fig['data'][0]['x'])
 
-    fig['layout'] = dict(title='Individual measurements', showlegend=True, xaxis={
-        'zeroline': False,
-        'title': 'Batch_Num',
-        'showline': False,
-        'domain': [0, 0.7]
-    }, yaxis={
-        'title': col,
-        'autorange': True
-    }, annotations=[
-        {'x': len_figure + 2, 'y': lcl, 'xref': 'x', 'yref': 'y', 'text': 'LCL:' + str(round(lcl, 2)),
-         'showarrow': True},
-        {'x': len_figure + 2, 'y': ucl, 'xref': 'x', 'yref': 'y', 'text': 'UCL: ' + str(round(ucl, 2)),
-         'showarrow': True},
-        {'x': len_figure + 2, 'y': usl, 'xref': 'x', 'yref': 'y', 'text': 'USL: ' + str(round(usl, 2)),
-         'showarrow': True},
-        {'x': len_figure + 2, 'y': lsl, 'xref': 'x', 'yref': 'y', 'text': 'LSL: ' + str(round(lsl, 2)),
-         'showarrow': True},
-        {'x': len_figure + 2, 'y': mean, 'xref': 'x', 'yref': 'y', 'text': 'Targeted mean: ' + str(round(mean, 2)),
-         'showarrow': False}
-    ],
-    shapes=[
-        {
-            'type': 'line',
-            'xref': 'x',
-            'yref': 'y',
-            'x0': 1,
-            'y0': usl,
-            'x1': len_figure + 2,
-            'y1': usl,
-            'line': {
-                'color': 'rgb(50, 171, 96)',
-                'width': 1,
-                'dash': 'dashdot'
-            }
+    fig['layout'] = dict(
+        title='Individual measurements',
+        showlegend=True,
+        xaxis={
+            'zeroline': False,
+            'title': 'Batch_Num',
+            'showline': False,
+            'domain': [0, 0.7]
         },
-        {
-            'type': 'line',
-            'xref': 'x',
-            'yref': 'y',
-            'x0': 1,
-            'y0': lsl,
-            'x1': len_figure + 2,
-            'y1': lsl,
-            'line': {
-                'color': 'rgb(50, 171, 96)',
-                'width': 1,
-                'dash': 'dashdot'
-            }
+        yaxis={
+            'title': col,
+            'autorange': True
         },
-        {
-            'type': 'line',
-            'xref': 'x',
-            'yref': 'y',
-            'x0': 1,
-            'y0': ucl,
-            'x1': len_figure + 2,
-            'y1': ucl,
-            'line': {
-                'color': 'rgb(255,127,80)',
-                'width': 1,
-                'dash': 'dashdot'
+        annotations=[
+            {'x': len_figure + 2, 'y': lcl, 'xref': 'x', 'yref': 'y',
+             'text': 'LCL:' + str(round(lcl, 2)),
+             'showarrow': True},
+            {'x': len_figure + 2, 'y': ucl, 'xref': 'x', 'yref': 'y',
+             'text': 'UCL: ' + str(round(ucl, 2)),
+             'showarrow': True},
+            {'x': len_figure + 2, 'y': usl, 'xref': 'x', 'yref': 'y',
+             'text': 'USL: ' + str(round(usl, 2)),
+             'showarrow': True},
+            {'x': len_figure + 2, 'y': lsl, 'xref': 'x', 'yref': 'y',
+             'text': 'LSL: ' + str(round(lsl, 2)),
+             'showarrow': True},
+            {'x': len_figure + 2, 'y': mean, 'xref': 'x', 'yref': 'y',
+             'text': 'Targeted mean: ' + str(round(mean, 2)),
+             'showarrow': False}
+        ],
+        shapes=[
+            {
+                'type': 'line',
+                'xref': 'x',
+                'yref': 'y',
+                'x0': 1,
+                'y0': usl,
+                'x1': len_figure + 2,
+                'y1': usl,
+                'line': {
+                    'color': 'rgb(50, 171, 96)',
+                    'width': 1,
+                    'dash': 'dashdot'
+                }
+            },
+            {
+                'type': 'line',
+                'xref': 'x',
+                'yref': 'y',
+                'x0': 1,
+                'y0': lsl,
+                'x1': len_figure + 2,
+                'y1': lsl,
+                'line': {
+                    'color': 'rgb(50, 171, 96)',
+                    'width': 1,
+                    'dash': 'dashdot'
+                }
+            },
+            {
+                'type': 'line',
+                'xref': 'x',
+                'yref': 'y',
+                'x0': 1,
+                'y0': ucl,
+                'x1': len_figure + 2,
+                'y1': ucl,
+                'line': {
+                    'color': 'rgb(255,127,80)',
+                    'width': 1,
+                    'dash': 'dashdot'
+                }
+            },
+            {
+                'type': 'line',
+                'xref': 'x',
+                'yref': 'y',
+                'x0': 1,
+                'y0': mean,
+                'x1': len_figure + 2,
+                'y1': mean,
+                'line': {
+                    'color': 'rgb(255,127,80)',
+                    'width': 2
+                }
+            },
+            {
+                'type': 'line',
+                'xref': 'x',
+                'yref': 'y',
+                'x0': 1,
+                'y0': lcl,
+                'x1': len_figure + 2,
+                'y1': lcl,
+                'line': {
+                    'color': 'rgb(255,127,80)',
+                    'width': 1,
+                    'dash': 'dashdot'
+                }
             }
+        ],
+        xaxis2={
+            'title': 'count',
+            'domain': [0.8, 1]  # 70 to 100 % of width
         },
-        {
-            'type': 'line',
-            'xref': 'x',
-            'yref': 'y',
-            'x0': 1,
-            'y0': mean,
-            'x1': len_figure + 2,
-            'y1': mean,
-            'line': {
-                'color': 'rgb(255,127,80)',
-                'width': 2
-            }
-        },
-        {
-            'type': 'line',
-            'xref': 'x',
-            'yref': 'y',
-            'x0': 1,
-            'y0': lcl,
-            'x1': len_figure + 2,
-            'y1': lcl,
-            'line': {
-                'color': 'rgb(255,127,80)',
-                'width': 1,
-                'dash': 'dashdot'
-            }
+        yaxis2={
+            'title': 'value',
+            'anchor': 'x2',
+            'showticklabels': False
         }
-    ],
-     xaxis2={
-         'title': 'count',
-         'domain': [0.8, 1]  # 70 to 100 % of width
-     },
-     yaxis2={
-         'title': 'value',
-         'anchor': 'x2',
-         'showticklabels': False
-     }
-     )
+    )
 
     return fig
 
@@ -812,8 +909,10 @@ def update_param1_row(interval):
         Input('Para3' + suffix_button_id, 'n_clicks_timestamp'),
         Input('Para4' + suffix_button_id, 'n_clicks_timestamp'),
         Input('Para5' + suffix_button_id, 'n_clicks_timestamp'),
-    ])
-def update_control_chart(interval, p1, p2, p3, p4, p5):
+    ],
+    state=[State("value-setter-store", 'data')]
+)
+def update_control_chart(interval, p1, p2, p3, p4, p5, data):
     if p1 == p2 == p3 == p4 == p5 == 0:
         p1 = time.time()
 
@@ -832,7 +931,7 @@ def update_control_chart(interval, p1, p2, p3, p4, p5):
             latest_clicked = key
             latest = ts_list[key]
 
-    return generate_graph(interval, latest_clicked)
+    return generate_graph(interval, data, latest_clicked)
 
 
 def update_spark_line_graph(interval, col):
@@ -865,7 +964,7 @@ def update_count(interval, col):
     else:
         total_count = interval
 
-    ooc_percentage_f = state_dict[col]['ooc'][total_count] * 100
+    ooc_percentage_f = state_dict[col]['ooc'][total_count] * 100    # todo : calculate ooc with stated dcc store data.
     ooc_percentage_str = "%.2f" % ooc_percentage_f + '%'
 
     if ooc_percentage_f > 15:

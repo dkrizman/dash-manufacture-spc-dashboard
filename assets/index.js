@@ -33,7 +33,7 @@
     return;
 
     function registerPrintButtonHandler() {
-        var button = document.getElementById("print-report");
+        let button = document.getElementById("print-report");
 
         if (!button || button.onclick === onPrintButtonClick) {
             setTimeout(registerPrintButtonHandler, 200);
@@ -45,5 +45,23 @@
 
     function onPrintButtonClick() {
         window.print();
+    }
+})();
+
+(function () {
+    toggleNextPageButtonVisibility();
+
+    function toggleNextPageButtonVisibility(){
+        let tab = document.getElementById("Specs-tab");
+        if (!tab || tab.onclick === onTab1Click) {
+            setTimeout(toggleNextPageButtonVisibility, 200);
+            return;
+        }
+        tab.onclick = onTab1Click;
+    }
+
+    function onTab1Click() {
+        let button = document.getElementById("tab-trigger-btn");
+        button.style.display = "block";
     }
 })();
