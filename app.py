@@ -9,16 +9,62 @@ import plotly.graph_objs as go
 import dash_daq as daq
 from textwrap import dedent
 
-from Data import df, state_dict
+import pandas as pd
 
-external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
-app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+app = dash.Dash(__name__)
 server = app.server
 app.scripts.config.serve_locally = True
 app.config['suppress_callback_exceptions'] = True
 
+df = pd.read_csv("data/spc_data.csv")
+
+
+def init_df():
+    ret = {}
+    for col in list(df[1:]):
+        data = df[col]
+        stats = data.describe()
+
+        std = stats['std'].tolist()
+        ucl = (stats['mean'] + 3 * stats['std']).tolist()
+        lcl = (stats['mean'] - 3 * stats['std']).tolist()
+        usl = (stats['mean'] + stats['std']).tolist()
+        lsl = (stats['mean'] - stats['std']).tolist()
+
+        ret.update({
+            col: {
+                'count': stats['count'].tolist(),
+                'data': data,
+                'mean': stats['mean'].tolist(),
+                'std': std,
+                'ucl': round(ucl, 3),
+                'lcl': round(lcl, 3),
+                'usl': round(usl, 3),
+                'lsl': round(lsl, 3),
+                'min': stats['min'].tolist(),
+                'max': stats['max'].tolist(),
+                'ooc': populate_ooc(data, ucl, lcl)
+            }
+        })
+
+    return ret
+
+
+def populate_ooc(data, ucl, lcl):
+    ooc_count = 0
+    ret = []
+    for i in range(len(data)):
+        if data[i] >= ucl or data[i] <= lcl:
+            ooc_count += 1
+            ret.append(ooc_count / (i + 1))
+        else:
+            ret.append(ooc_count / (i + 1))
+    return ret
+
+state_dict = init_df()
 params = list(df)
 max_length = len(df)
+
 
 suffix_row = '_row'
 suffix_button_id = '_button'
@@ -41,12 +87,12 @@ def root_layout():
                 id='app-content',
                 className='container scalable'
             ),
-            generate_modal(),
-            html.Button('Proceed to measure', id='tab-trigger-btn', n_clicks=0, style={'display':'inline'}),
+            # html.Button('Proceed to measure', id='tab-trigger-btn', n_clicks=0, style={'display': 'inline'}),
             dcc.Store(
                 id='value-setter-store',
                 data=init_value_setter_store()
-            )
+            ),
+            generate_modal(),
         ]
     )
 
@@ -79,7 +125,7 @@ def build_tabs():
                 children=[
                     dcc.Tab(
                         id='Specs-tab',
-                        label='Set Specifications',
+                        label='Specification Settings',
                         value='tab1',
                         disabled=False
                     ),
@@ -96,42 +142,38 @@ def build_tabs():
 
 def init_value_setter_store():
     # Initialize store data
-    ret = {}
-    for param in params[1:]:
-        ret.update({
-            param: {
-                'usl': state_dict[param]['usl'],
-                'lsl': state_dict[param]['lsl'],
-                'ucl': state_dict[param]['ucl'],
-                'lcl': state_dict[param]['lcl']
-            }
-        })
-    return ret
+    state_dict = init_df()
+    return state_dict
 
 
 def build_tab_1():
     return [
+        # Manually select metrics
         html.Div(
-            className='four columns',
-            children=html.Div(
-                'list'
-            )
-            # manual change list
+            id='set-specs-intro-container',
+            className='twelve columns',
+            children=html.P("Use historical control limits to establish a benchmark, or set new values.")
         ),
         html.Div(
-            className='six columns',
+            className='five columns',
             children=[
-                html.Label('Choose Parameters'),
+                html.Label(id='metric-select-title', children='Select Metrics'),
+                html.Br(),
                 dcc.Dropdown(
-                    id='value-setter-dropdown',
+                    id='metric-select-dropdown',
                     options=list({'label': param, 'value': param} for param in params[1:]),
                     value=params[1]
-                ),
+                )]),
+
+        html.Div(
+            className='five columns',
+            children=[
                 html.Div(
-                    id='value-setter-panel',
-                ),
-                html.Button('Set', id='value-setter-set-btn'),
-                html.Div(id='test')
+                    id='value-setter-panel'),
+                html.Br(),
+                html.Button('Update', id='value-setter-set-btn'),
+                # html.Button('Use historical', id='value-setter-historical-button'),
+                html.Div(id='data-update-indicator', children='Updated!', style={'display': 'none'})
             ]
         )
     ]
@@ -143,30 +185,9 @@ ud_ucl_input = daq.NumericInput(id='ud_ucl_input', size=200, max=9999999, style=
 ud_lcl_input = daq.NumericInput(id='ud_lcl_input', size=200, max=9999999, style={'width': '100%', 'height': '100%'})
 
 
-@app.callback(
-    output=[
-        Output('value-setter-panel', 'children'),
-        Output('ud_usl_input', 'value'),
-        Output('ud_lsl_input', 'value'),
-        Output('ud_ucl_input', 'value'),
-        Output('ud_lcl_input', 'value')],
-    inputs=[Input('value-setter-dropdown', 'value')],
-    state=[State('value-setter-store', 'data')]
-)
-def build_value_setter_panel(dd_value, state_value):
-    return [
-               html.Label(dd_value),
-               build_value_setter_line('spec', 'historical value', 'user defined value'),
-               build_value_setter_line('Upper Specification limit', state_dict[dd_value]['usl'], ud_usl_input),
-               build_value_setter_line('Lower Specification limit', state_dict[dd_value]['lsl'], ud_lsl_input),
-               build_value_setter_line('Upper Control limit', state_dict[dd_value]['ucl'], ud_ucl_input),
-               build_value_setter_line('Lower Control limit', state_dict[dd_value]['lcl'], ud_lcl_input)
-           ], state_value[dd_value]['usl'], state_value[dd_value]['lsl'], state_value[dd_value]['ucl'], \
-           state_value[dd_value]['lcl']
-
-
-def build_value_setter_line(label, value, col3):
+def build_value_setter_line(line_num, label, value, col3):
     return html.Div(
+        id=line_num,
         children=[
             html.Label(label, className='four columns'),
             html.Label(value, className='four columns'),
@@ -175,13 +196,41 @@ def build_value_setter_line(label, value, col3):
     )
 
 
+# ===== Callbacks to update values based on store data and dropdown selection =====
+@app.callback(
+    output=[
+        Output('value-setter-panel', 'children'),
+        Output('ud_usl_input', 'value'),
+        Output('ud_lsl_input', 'value'),
+        Output('ud_ucl_input', 'value'),
+        Output('ud_lcl_input', 'value')],
+    inputs=[Input('metric-select-dropdown', 'value')],
+    state=[State('value-setter-store', 'data')]
+)
+def build_value_setter_panel(dd_select, state_value):
+    return [
+               # html.Label(dd_select),
+               build_value_setter_line('value-setter-panel-header', 'Specs', 'Historical Value', 'Set new value'),
+               build_value_setter_line('value-setter-panel-usl', 'Upper Specification limit',
+                                       state_dict[dd_select]['usl'], ud_usl_input),
+               build_value_setter_line('value-setter-panel-lsl', 'Lower Specification limit',
+                                       state_dict[dd_select]['lsl'], ud_lsl_input),
+               build_value_setter_line('value-setter-panel-ucl', 'Upper Control limit', state_dict[dd_select]['ucl'],
+                                       ud_ucl_input),
+               build_value_setter_line('value-setter-panel-lcl', 'Lower Control limit', state_dict[dd_select]['lcl'],
+                                       ud_lcl_input)
+           ], state_value[dd_select]['usl'], state_value[dd_select]['lsl'], state_value[dd_select]['ucl'], \
+           state_value[dd_select]['lcl']
+
+
+# ====== Callbacks to update stored data via click =====
 @app.callback(
     output=Output('value-setter-store', 'data'),
     inputs=[
         Input('value-setter-set-btn', 'n_clicks')
     ],
     state=[
-        State('value-setter-dropdown', 'value'),
+        State('metric-select-dropdown', 'value'),
         State('value-setter-store', 'data'),
         State('ud_usl_input', 'value'),
         State('ud_lsl_input', 'value'),
@@ -200,16 +249,17 @@ def set_value_setter_store(set_btn, param, data, usl, lsl, ucl, lcl):
         return data
 
 
-@app.callback(
-    output=[Output('app-tabs', 'value'), Output('tab-trigger-btn', 'style')],
-    inputs=[Input('tab-trigger-btn', 'n_clicks')],
-    state=[State('tab-trigger-btn', 'style')]
-)
-def switch_tab(n_clicks, style):
-    if n_clicks > 0:
-        style['display'] = 'none'
-        return ['tab2', style]
-    return ['tab1', style]
+#
+# @app.callback(
+#     output=[Output('app-tabs', 'value'), Output('tab-trigger-btn', 'style')],
+#     inputs=[Input('tab-trigger-btn', 'n_clicks')],
+#     state=[State('tab-trigger-btn', 'style')]
+# )
+# def switch_tab(n_clicks, style):
+#     if n_clicks > 0:
+#         style['display'] = 'none'
+#         return ['tab2', style]
+#     return ['tab1', style]
 
 
 @app.callback(
@@ -244,7 +294,7 @@ def build_quick_stats_panel():
                 className='four columns',
                 children=[
                     html.H5("Total Processes"),
-                    html.Span("5")
+                    html.Span(id='stats-span', children="5")
                 ]
             ),
 
@@ -257,7 +307,7 @@ def build_quick_stats_panel():
                         id='progress-gauge',
                         value=0,
                         size=150,
-                        max=max_length,
+                        max=max_length * 2,
                         min=0,
                     )
                 ]
@@ -595,7 +645,7 @@ def build_chart_panel():
 
             dcc.Interval(
                 id='interval-component',
-                interval=3 * 1000,  # in milliseconds
+                interval=2 * 1000,  # in milliseconds
                 n_intervals=0,
                 disabled=True
             ),
@@ -683,19 +733,19 @@ def generate_graph(interval, specs_dict, col):
         },
         annotations=[
             {'x': len_figure + 2, 'y': lcl, 'xref': 'x', 'yref': 'y',
-             'text': 'LCL:' + str(round(lcl, 2)),
+             'text': 'LCL:' + str(round(lcl, 3)),
              'showarrow': True},
             {'x': len_figure + 2, 'y': ucl, 'xref': 'x', 'yref': 'y',
-             'text': 'UCL: ' + str(round(ucl, 2)),
+             'text': 'UCL: ' + str(round(ucl, 3)),
              'showarrow': True},
             {'x': len_figure + 2, 'y': usl, 'xref': 'x', 'yref': 'y',
-             'text': 'USL: ' + str(round(usl, 2)),
+             'text': 'USL: ' + str(round(usl, 3)),
              'showarrow': True},
             {'x': len_figure + 2, 'y': lsl, 'xref': 'x', 'yref': 'y',
-             'text': 'LSL: ' + str(round(lsl, 2)),
+             'text': 'LSL: ' + str(round(lsl, 3)),
              'showarrow': True},
             {'x': len_figure + 2, 'y': mean, 'xref': 'x', 'yref': 'y',
-             'text': 'Targeted mean: ' + str(round(mean, 2)),
+             'text': 'Targeted mean: ' + str(round(mean, 3)),
              'showarrow': False}
         ],
         shapes=[
@@ -964,7 +1014,7 @@ def update_count(interval, col):
     else:
         total_count = interval
 
-    ooc_percentage_f = state_dict[col]['ooc'][total_count] * 100    # todo : calculate ooc with stated dcc store data.
+    ooc_percentage_f = state_dict[col]['ooc'][total_count] * 100  # todo : calculate ooc with stated dcc store data.
     ooc_percentage_str = "%.2f" % ooc_percentage_f + '%'
 
     if ooc_percentage_f > 15:
