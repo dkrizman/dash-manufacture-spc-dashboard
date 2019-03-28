@@ -680,10 +680,12 @@ def generate_graph(interval, specs_dict, col):
     x_array = state_dict['Batch']['data'].tolist()
     y_array = col_data.tolist()
 
+    total_count = 0
+
     if interval > max_length:
         total_count = max_length - 1
-    else:
-        total_count = interval
+    elif interval > 0:
+        total_count = interval - 1
 
     ooc_trace = {'x': [],
                  'y': [],
@@ -994,18 +996,24 @@ def update_control_chart(interval, p1, p2, p3, p4, p5, data):
 
 
 def update_spark_line_graph(interval, col):
+    if interval == 0:
+        data = [{'x': [], 'y': [], 'mode': 'lines+markers',
+                  'name': col}]
     # update spark line graph
-    if interval >= max_length:
-        total_count = max_length - 1
     else:
-        total_count = interval
+        if interval >= max_length:
+            total_count = max_length - 1
+        else:
+            total_count = interval - 1
 
-    x_array = state_dict['Batch']['data'].tolist()
-    y_array = state_dict[col]['data'].tolist()
+        x_array = state_dict['Batch']['data'].tolist()
+        y_array = state_dict[col]['data'].tolist()
+
+        data = [{'x': x_array[:total_count], 'y': y_array[:total_count], 'mode': 'lines+markers',
+                  'name': col}]
 
     new_fig = go.Figure({
-        'data': [{'x': x_array[:total_count], 'y': y_array[:total_count], 'mode': 'lines+markers',
-                  'name': col}],
+        'data': data,
         'layout': {
             'margin': dict(
                 l=0, r=0, t=4, b=4, pad=0
@@ -1024,11 +1032,12 @@ def update_count(interval, col, data):
     if interval >= max_length:
         total_count = max_length - 1
     else:
-        total_count = interval
+        total_count = interval - 1
 
-    ooc_percentage_f = data[col]['ooc'][total_count] * 100  # todo : calculate ooc with stated dcc store data.
+    ooc_percentage_f = data[col]['ooc'][total_count] * 100
     ooc_percentage_str = "%.2f" % ooc_percentage_f + '%'
-
+    # if col == 'Para5':
+    #     print(interval, total_count, ooc_percentage_f)
     if ooc_percentage_f > 15:
         ooc_percentage_f = 15
 
@@ -1046,18 +1055,23 @@ def update_count(interval, col, data):
 @app.callback(
     output=Output('piechart', 'figure'),
     inputs=[
-        Input('interval-component', 'n_intervals')]
+        Input('interval-component', 'n_intervals')],
+    state = [State("value-setter-store", 'data')]
 )
-def update_piechart(interval):
+def update_piechart(interval, stored_data):
+
+    if interval == 0:
+        return {}
+
     if interval >= max_length:
         total_count = max_length - 1
     else:
-        total_count = interval
+        total_count = interval - 1
 
     values = []
     colors = []
     for param in params[1:]:
-        ooc_param = (state_dict[param]['ooc'][total_count] * 100) + 1
+        ooc_param = (stored_data[param]['ooc'][total_count] * 100) + 1
         values.append(ooc_param)
         if ooc_param > 4:
             colors.append('rgb(206,0,5)')
