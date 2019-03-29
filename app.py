@@ -314,8 +314,12 @@ def build_quick_stats_panel():
                 id="card-1",
                 className='four columns',
                 children=[
-                    html.H5("Total Processes"),
-                    html.Span(id='stats-span', children="5")
+                    html.H5("Operator ID"),
+                    daq.LEDDisplay(
+                        value='1704',
+                        color="#000000",
+                        size=50
+                    )
                 ]
             ),
 

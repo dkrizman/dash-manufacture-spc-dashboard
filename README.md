@@ -50,7 +50,7 @@ python app.py
 ```
 Open http://0.0.0.0:8051/ in your browser, you will see a live-updating dashboard.
 
-Click on **About this app** button to learn more about how this app works.
+Click on **Learn more** button to learn more about how this app works.
 
 ## What does this app shows
 
