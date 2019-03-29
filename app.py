@@ -1089,7 +1089,7 @@ def update_piechart(interval, stored_data):
     for param in params[1:]:
         ooc_param = (stored_data[param]['ooc'][total_count] * 100) + 1
         values.append(ooc_param)
-        if ooc_param > 4:
+        if ooc_param > 6:
             colors.append('rgb(206,0,5)')
         else:
             colors.append('rgb(76,178,51')
