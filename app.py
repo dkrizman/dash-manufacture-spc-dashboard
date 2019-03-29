@@ -545,9 +545,9 @@ def generate_metric_row_helper(index):
                 children=item,
                 title="Click to visualize live SPC chart",
                 n_clicks_timestamp=0,
-                style={
-                    'width': '100%'
-                }
+                # style={
+                #     'width': '100%'
+                # }
             )
         },
         {
@@ -898,86 +898,86 @@ def update_gauge(interval):
 # ======= update each row at interval =========
 @app.callback(
     output=[
-        Output('Para1' + suffix_count, 'children'),
-        Output('Para1' + suffix_sparkline_graph, 'figure'),
-        Output('Para1' + suffix_ooc_n, 'children'),
-        Output('Para1' + suffix_ooc_g, 'value'),
-        Output('Para1' + suffix_indicator, 'color')
+        Output('Metric1' + suffix_count, 'children'),
+        Output('Metric1' + suffix_sparkline_graph, 'figure'),
+        Output('Metric1' + suffix_ooc_n, 'children'),
+        Output('Metric1' + suffix_ooc_g, 'value'),
+        Output('Metric1' + suffix_indicator, 'color')
     ],
     inputs=[Input('interval-component', 'n_intervals')],
     state=[State('value-setter-store', 'data')]
 )
 def update_param1_row(interval, stored_data):
-    count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Para1', stored_data)
-    spark_line_graph = update_spark_line_graph(interval, 'Para1')
+    count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Metric1', stored_data)
+    spark_line_graph = update_spark_line_graph(interval, 'Metric1')
     return count, spark_line_graph, ooc_n, ooc_g_value, indicator
 
 
 @app.callback(
     output=[
-        Output('Para2' + suffix_count, 'children'),
-        Output('Para2' + suffix_sparkline_graph, 'figure'),
-        Output('Para2' + suffix_ooc_n, 'children'),
-        Output('Para2' + suffix_ooc_g, 'value'),
-        Output('Para2' + suffix_indicator, 'color')
+        Output('Metric2' + suffix_count, 'children'),
+        Output('Metric2' + suffix_sparkline_graph, 'figure'),
+        Output('Metric2' + suffix_ooc_n, 'children'),
+        Output('Metric2' + suffix_ooc_g, 'value'),
+        Output('Metric2' + suffix_indicator, 'color')
     ],
     inputs=[Input('interval-component', 'n_intervals')],
     state=[State('value-setter-store', 'data')]
 )
 def update_param2_row(interval, stored_data):
-    count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Para2', stored_data)
-    spark_line_graph = update_spark_line_graph(interval, 'Para2')
+    count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Metric2', stored_data)
+    spark_line_graph = update_spark_line_graph(interval, 'Metric2')
     return count, spark_line_graph, ooc_n, ooc_g_value, indicator
 
 
 @app.callback(
     output=[
-        Output('Para3' + suffix_count, 'children'),
-        Output('Para3' + suffix_sparkline_graph, 'figure'),
-        Output('Para3' + suffix_ooc_n, 'children'),
-        Output('Para3' + suffix_ooc_g, 'value'),
-        Output('Para3' + suffix_indicator, 'color')
+        Output('Metric3' + suffix_count, 'children'),
+        Output('Metric3' + suffix_sparkline_graph, 'figure'),
+        Output('Metric3' + suffix_ooc_n, 'children'),
+        Output('Metric3' + suffix_ooc_g, 'value'),
+        Output('Metric3' + suffix_indicator, 'color')
     ],
     inputs=[Input('interval-component', 'n_intervals')],
     state=[State('value-setter-store', 'data')]
 )
 def update_param3_row(interval, stored_data):
-    count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Para3', stored_data)
-    spark_line_graph = update_spark_line_graph(interval, 'Para3')
+    count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Metric3', stored_data)
+    spark_line_graph = update_spark_line_graph(interval, 'Metric3')
     return count, spark_line_graph, ooc_n, ooc_g_value, indicator
 
 
 @app.callback(
     output=[
-        Output('Para4' + suffix_count, 'children'),
-        Output('Para4' + suffix_sparkline_graph, 'figure'),
-        Output('Para4' + suffix_ooc_n, 'children'),
-        Output('Para4' + suffix_ooc_g, 'value'),
-        Output('Para4' + suffix_indicator, 'color')
+        Output('Thickness1' + suffix_count, 'children'),
+        Output('Thickness1' + suffix_sparkline_graph, 'figure'),
+        Output('Thickness1' + suffix_ooc_n, 'children'),
+        Output('Thickness1' + suffix_ooc_g, 'value'),
+        Output('Thickness1' + suffix_indicator, 'color')
     ],
     inputs=[Input('interval-component', 'n_intervals')],
     state=[State('value-setter-store', 'data')]
 )
 def update_param4_row(interval, stored_data):
-    count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Para4', stored_data)
-    spark_line_graph = update_spark_line_graph(interval, 'Para4')
+    count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Thickness1', stored_data)
+    spark_line_graph = update_spark_line_graph(interval, 'Thickness1')
     return count, spark_line_graph, ooc_n, ooc_g_value, indicator
 
 
 @app.callback(
     output=[
-        Output('Para5' + suffix_count, 'children'),
-        Output('Para5' + suffix_sparkline_graph, 'figure'),
-        Output('Para5' + suffix_ooc_n, 'children'),
-        Output('Para5' + suffix_ooc_g, 'value'),
-        Output('Para5' + suffix_indicator, 'color')
+        Output('Width1' + suffix_count, 'children'),
+        Output('Width1' + suffix_sparkline_graph, 'figure'),
+        Output('Width1' + suffix_ooc_n, 'children'),
+        Output('Width1' + suffix_ooc_g, 'value'),
+        Output('Width1' + suffix_indicator, 'color')
     ],
     inputs=[Input('interval-component', 'n_intervals')],
     state=[State('value-setter-store', 'data')]
 )
 def update_param5_row(interval, stored_data):
-    count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Para5', stored_data)
-    spark_line_graph = update_spark_line_graph(interval, 'Para5')
+    count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Width1', stored_data)
+    spark_line_graph = update_spark_line_graph(interval, 'Width1')
     return count, spark_line_graph, ooc_n, ooc_g_value, indicator
 
 
@@ -986,11 +986,11 @@ def update_param5_row(interval, stored_data):
     output=Output('control-chart-live', 'figure'),
     inputs=[
         Input('interval-component', 'n_intervals'),
-        Input('Para1' + suffix_button_id, 'n_clicks_timestamp'),
-        Input('Para2' + suffix_button_id, 'n_clicks_timestamp'),
-        Input('Para3' + suffix_button_id, 'n_clicks_timestamp'),
-        Input('Para4' + suffix_button_id, 'n_clicks_timestamp'),
-        Input('Para5' + suffix_button_id, 'n_clicks_timestamp'),
+        Input('Metric1' + suffix_button_id, 'n_clicks_timestamp'),
+        Input('Metric2' + suffix_button_id, 'n_clicks_timestamp'),
+        Input('Metric3' + suffix_button_id, 'n_clicks_timestamp'),
+        Input('Thickness1' + suffix_button_id, 'n_clicks_timestamp'),
+        Input('Width1' + suffix_button_id, 'n_clicks_timestamp'),
     ],
     state=[State("value-setter-store", 'data')]
 )
@@ -1000,11 +1000,11 @@ def update_control_chart(interval, p1, p2, p3, p4, p5, data):
 
     # first find out who clicked last
     ts_list = {
-        'Para1': p1,
-        'Para2': p2,
-        'Para3': p3,
-        'Para4': p4,
-        'Para5': p5
+        'Metric1': p1,
+        'Metric2': p2,
+        'Metric3': p3,
+        'Thickness1': p4,
+        'Width1': p5
     }
     latest_clicked = '',
     latest = 0
