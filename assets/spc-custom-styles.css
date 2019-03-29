@@ -111,10 +111,11 @@
     border: none;
 }
 
-.quick-stats-row {
+#quick-stats.row {
     display: flex;
     flex-direction: row;
     justify-content: space-evenly;
+    margin: 20px 0px;
 }
 
 #stats-span {
@@ -140,7 +141,6 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    height: 100%;
     justify-content: space-evenly;
 }
 
@@ -155,6 +155,7 @@
     border-radius: 4px;
     background-color: #2a3f5f;
     color: #F5F5F5;
+    font-size: 12px;
 }
 
 
@@ -199,6 +200,14 @@
     margin: 20px 0px;
 }
 
+#metric-select-title{
+    font-weight:bold;
+}
+
+#value-setter-view-btn{
+    margin-left: 20px;
+}
+
 #value-setter-panel{
     line-height:3;
 }
@@ -206,3 +215,7 @@
     font-weight:bold;
 }
 
+.output-datatable{
+    margin: 20px 0px;
+    line-height:3;
+}

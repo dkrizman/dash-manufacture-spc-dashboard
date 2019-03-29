@@ -5,6 +5,7 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
+import dash_table
 import plotly.graph_objs as go
 import dash_daq as daq
 from textwrap import dedent
@@ -173,8 +174,8 @@ def build_tab_1():
                     id='value-setter-panel'),
                 html.Br(),
                 html.Button('Update', id='value-setter-set-btn'),
-                # html.Button('Use historical', id='value-setter-historical-button'),
-                html.Div(id='data-update-indicator', children='Updated!', style={'display': 'none'})
+                html.Button('View current setup', id='value-setter-view-btn', n_clicks=0),
+                html.Div(id='value-setter-view-output', className='output-datatable')
             ]
         )
     ]
@@ -253,17 +254,34 @@ def set_value_setter_store(set_btn, param, data, usl, lsl, ucl, lcl):
         return data
 
 
-#
-# @app.callback(
-#     output=[Output('app-tabs', 'value'), Output('tab-trigger-btn', 'style')],
-#     inputs=[Input('tab-trigger-btn', 'n_clicks')],
-#     state=[State('tab-trigger-btn', 'style')]
-# )
-# def switch_tab(n_clicks, style):
-#     if n_clicks > 0:
-#         style['display'] = 'none'
-#         return ['tab2', style]
-#     return ['tab1', style]
+@app.callback(
+    output=Output('value-setter-view-output', 'children'),
+    inputs=[Input('value-setter-view-btn', 'n_clicks'), Input('metric-select-dropdown', 'value'), Input('value-setter-store', 'data')]
+)
+def show_current_specs(n_clicks, dd_select, store_data):
+    if n_clicks > 0:
+        curr_col_data = store_data[dd_select]
+        new_df_dict = {
+            'Specs': ['Upper Specification Limit', 'Lower Specification Limit', 'Upper Control Limit',
+                      'Lower Control Limit'],
+            'Current Setup': [curr_col_data['usl'], curr_col_data['lsl'], curr_col_data['ucl'], curr_col_data['lcl']]
+        }
+        new_df = pd.DataFrame.from_dict(new_df_dict)
+        return dash_table.DataTable(
+            style_header={
+                'backgroundColor': 'white',
+                'fontWeight': 'bold'
+            },
+            style_cell_conditional=[
+                {
+                    'if': {'column_id': c},
+                    'textAlign': 'left'
+                } for c in ['Specs']
+            ],
+            data=new_df.to_dict('rows'),
+            columns=[{'id': c, 'name': c} for c in ['Specs', 'Current Setup']]
+        )
+
 
 
 @app.callback(
@@ -288,8 +306,7 @@ def render_content(tab):
 
 def build_quick_stats_panel():
     return html.Div(
-        id="Quick-stats",
-        style={'height': '25vh'},
+        id="quick-stats",
         className='row',
         children=
         [
@@ -998,7 +1015,7 @@ def update_control_chart(interval, p1, p2, p3, p4, p5, data):
 def update_spark_line_graph(interval, col):
     if interval == 0:
         data = [{'x': [], 'y': [], 'mode': 'lines+markers',
-                  'name': col}]
+                 'name': col}]
     # update spark line graph
     else:
         if interval >= max_length:
@@ -1010,7 +1027,7 @@ def update_spark_line_graph(interval, col):
         y_array = state_dict[col]['data'].tolist()
 
         data = [{'x': x_array[:total_count], 'y': y_array[:total_count], 'mode': 'lines+markers',
-                  'name': col}]
+                 'name': col}]
 
     new_fig = go.Figure({
         'data': data,
@@ -1056,10 +1073,9 @@ def update_count(interval, col, data):
     output=Output('piechart', 'figure'),
     inputs=[
         Input('interval-component', 'n_intervals')],
-    state = [State("value-setter-store", 'data')]
+    state=[State("value-setter-store", 'data')]
 )
 def update_piechart(interval, stored_data):
-
     if interval == 0:
         return {}
 
