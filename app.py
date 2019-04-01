@@ -1,5 +1,4 @@
 import time
-import json
 
 import dash
 import dash_core_components as dcc
@@ -63,7 +62,7 @@ def build_banner():
                 id='learn-more-button',
                 children="LEARN MORE",
                 n_clicks=0,
-                className='button-primary'),
+                ),
             html.Img(
                 src="https://s3-us-west-1.amazonaws.com/plotly-tutorials/logo/new-branding/dash-logo-by-plotly-stripe-inverted.png")
         ]
@@ -78,17 +77,22 @@ def build_tabs():
             dcc.Tabs(
                 id='app-tabs',
                 value='tab1',
+                className='custom-tabs',
                 children=[
                     dcc.Tab(
                         id='Specs-tab',
                         label='Specification Settings',
                         value='tab1',
+                        className='custom-tab',
+                        selected_className='custom-tab--selected',
                         disabled=False
                     ),
                     dcc.Tab(
                         id='Control-chart-tab',
                         label='Control Charts Dashboard',
                         value='tab2',
+                        className='custom-tab',
+                        selected_className='custom-tab--selected',
                         disabled=False)
                 ]
             )

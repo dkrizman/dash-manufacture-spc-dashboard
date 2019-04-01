@@ -5,28 +5,38 @@
 - Remove Undo
 /* Banner
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
+
+body {
+    color: #95969A !important;
+    background-color: #23262E !important;
+    font-family: "Open Sans", sans-serif;
+}
+
 .banner {
     height: 50px;
-    background-color: #0D76BF;
+    background-color: #2d3038;
     padding-top: 5px;
     padding-left: 0px;
     padding-right: 0px;
     width: 100%;
     margin-bottom: 10px;
+    border-bottom: 1px solid #95969A;
 }
 
 .banner h5 {
-    color: white;
+    color: #95969A;
     margin-left: 5%;
     display: inline-block;
     font-family: 'Open Sans', sans-serif;
     font-size: 2rem;
+    font-weight:bold;
     line-height: 1;
     text-transform: uppercase;
 }
 
 .banner button {
     margin-left: 5%;
+    color: #95969A;
 }
 
 .banner Img {
@@ -36,9 +46,27 @@
     height: 40px;
 }
 
+/* Tabs
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+
+.custom-tabs {
+    background-color: #2d3038;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+#Specs-tab.custom-tab, #Control-chart-tab.custom-tab {
+    background-color: #2d3038;
+    color: #95969A;
+    border-color: #23262E;
+}
+
+#Specs-tab.custom-tab--selected, #Control-chart-tab.custom-tab--selected {
+    border-top-color: #FFD15F !important;
+}
+
 .section-banner {
     background-color: #F5F5F5;
-    color: #2a3f5f;
     text-align: center;
     font-weight: bold;
     padding: 5px 5px;
@@ -66,9 +94,6 @@
     display: none;
 }
 
-#learn-more-button {
-    background-color: #0D76BF;
-}
 
 #Metric1_button, #Metric2_button, #Metric3_button, #Thickness1_button, #Width1_button {
     padding: 0px 0px;
@@ -93,7 +118,7 @@
     width: 60vw;
     margin: 10% auto;
     padding: 10px 15px;
-    background-color: #F9F9F9;
+    background-color: #2d3038;
 }
 
 .close-container {
@@ -111,6 +136,10 @@
     border: none;
 }
 
+.closeButton:hover{
+    color: #FFD15F;
+}
+
 #quick-stats.row {
     display: flex;
     flex-direction: row;
@@ -119,7 +148,6 @@
 }
 
 #stats-span {
-    color: #0D76BF;
     font-size: 100px;
     font-weight: 500;
 }
@@ -161,12 +189,10 @@
 
 #card-1 h5, #card-2 h5 {
     font-weight: 700;
-    color: #2a3f5f;
 }
 
 #card1 span {
     font-size: 25px;
-    color: #0D76BF;
 }
 
 @media print {
@@ -193,8 +219,6 @@
 }
 
 #set-specs-intro-container {
-    margin-left: 4%;
-    color: #2a3f5f;
     font-weight:bold;
     padding: 5px 5px;
     margin: 20px 0px;
@@ -215,7 +239,34 @@
     font-weight:bold;
 }
 
+#react-select-2--value {
+    background: #2d3038;
+}
+
+.Select.has-value.Select--single > .Select-control .Select-value .Select-value-label {
+    color: #95969A !important;
+}
+
+.Select-control, .Select-control > span {
+    color: #95969A;
+    background: #2d3038 !important;
+}
+
+.Select.is-focused:not(.is-open) > .Select-control {
+    border-color: #FFD15F !important;
+}
+
 .output-datatable{
     margin: 20px 0px;
     line-height:3;
+}
+
+.dash-spreadsheet-container .dash-spreadsheet-inner * {
+    background-color: #2d3038;
+    color: #95969A;
+    border: #53555B;
+}
+
+#value-setter-set-btn:hover, #value-setter-view-btn:hover {
+    color: #FFFFFF;
 }

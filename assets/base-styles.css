@@ -276,9 +276,9 @@ input[type="tel"]:focus,
 input[type="url"]:focus,
 input[type="password"]:focus,
 textarea:focus,
-select:focus {
-  border: 1px solid #33C3F0;
-  outline: 0; }
+/*select:focus {*/
+/*  border: 1px solid #33C3F0;*/
+/*  outline: 0; }*/
 label,
 legend {
   display: block;
