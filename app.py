@@ -346,7 +346,7 @@ def build_quick_stats_panel():
                         size=150,
                         max=max_length * 2,
                         min=0,
-                        theme=theme
+                        color=theme['secondary']
                     )
                 ]
             ),
