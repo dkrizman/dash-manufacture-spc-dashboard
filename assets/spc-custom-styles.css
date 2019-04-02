@@ -29,7 +29,7 @@ body {
     display: inline-block;
     font-family: 'Open Sans', sans-serif;
     font-size: 2rem;
-    font-weight:bold;
+    font-weight: bold;
     line-height: 1;
     text-transform: uppercase;
 }
@@ -53,12 +53,17 @@ body {
     background-color: #2d3038;
     text-transform: uppercase;
     font-weight: bold;
+    height: 20px;
 }
 
 #Specs-tab.custom-tab, #Control-chart-tab.custom-tab {
     background-color: #2d3038;
     color: #95969A;
     border-color: #23262E;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
 #Specs-tab.custom-tab--selected, #Control-chart-tab.custom-tab--selected {
@@ -66,11 +71,12 @@ body {
 }
 
 .section-banner {
-    background-color: #F5F5F5;
+    background-color: #2d3038;
     text-align: center;
     font-weight: bold;
-    padding: 5px 5px;
+    padding: 0px;
     height: 30px;
+    box-shadow: 0px 2px 2px -2px;
 }
 
 #top-section-container {
@@ -84,7 +90,7 @@ body {
 /* Scalable Container
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 .container.scalable {
-    width: 90%;
+    width: 95%;
     max-width: none;
 }
 
@@ -94,9 +100,17 @@ body {
     display: none;
 }
 
-
 #Metric1_button, #Metric2_button, #Metric3_button, #Thickness1_button, #Width1_button {
     padding: 0px 0px;
+    color: #95969A;
+}
+
+#Metric1_button:hover, #Metric2_button:hover, #Metric3_button:hover, #Thickness1_button:hover, #Width1_button:hover {
+    color: #FFFFFF;
+}
+
+#Metric1_OOC_graph > div > div, #Metric2_OOC_graph > div > div, #Metric3_OOC_graph > div > div, #Thickness1_OOC_graph > div > div, #Width1_OOC_graph > div > div, #Metric6_OOC_graph > div > div {
+    width: 100%;
 }
 
 /* The Modal (background) */
@@ -136,7 +150,7 @@ body {
     border: none;
 }
 
-.closeButton:hover{
+.closeButton:hover {
     color: #FFD15F;
 }
 
@@ -147,17 +161,30 @@ body {
     margin: 20px 0px;
 }
 
-#stats-span {
-    font-size: 100px;
-    font-weight: 500;
-}
-
 #metric-summary-session, #ooc-piechart-outer, #control-chart-container {
-    border: 1px solid #F5F5F5;
+    background-color: #2d3038;
     border-radius: 10px;
+    padding: 3px;
 }
 
-#card-1, #card-2{
+#ooc-piechart-outer {
+    height: 100%;
+}
+
+#piechart {
+    height: calc(100% - 30px);
+    margin: 2px 0px;
+}
+
+#control-chart-live {
+    margin: 2px 0px;
+}
+
+#piechart.plot-container plotly {
+    height: 100%;
+}
+
+#card-1, #card-2 {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -174,8 +201,13 @@ body {
 
 #stop-button > div > button {
     font-size: 16px;
-    border-radius:4px;
-    height:40px;
+    border-radius: 4px;
+    height: 40px;
+    line-height: 40px;
+}
+
+#stop-button > div > button:hover {
+    color: #FFD15F;
 }
 
 #print-report {
@@ -219,24 +251,25 @@ body {
 }
 
 #set-specs-intro-container {
-    font-weight:bold;
+    font-weight: bold;
     padding: 5px 5px;
     margin: 20px 0px;
 }
 
-#metric-select-title{
-    font-weight:bold;
+#metric-select-title {
+    font-weight: bold;
 }
 
-#value-setter-view-btn{
+#value-setter-view-btn {
     margin-left: 20px;
 }
 
-#value-setter-panel{
-    line-height:3;
+#value-setter-panel {
+    line-height: 3;
 }
-#value-setter-panel-header{
-    font-weight:bold;
+
+#value-setter-panel-header {
+    font-weight: bold;
 }
 
 #react-select-2--value {
@@ -256,9 +289,9 @@ body {
     border-color: #FFD15F !important;
 }
 
-.output-datatable{
+.output-datatable {
     margin: 20px 0px;
-    line-height:3;
+    line-height: 3;
 }
 
 .dash-spreadsheet-container .dash-spreadsheet-inner * {

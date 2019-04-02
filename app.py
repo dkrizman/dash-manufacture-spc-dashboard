@@ -29,6 +29,13 @@ suffix_ooc_n = '_OOC_number'
 suffix_ooc_g = '_OOC_graph'
 suffix_indicator = '_indicator'
 
+theme = {
+    'dark': True,
+    'detail': '#2d3038',  # Background-card
+    'primary': '#007439',  # Green
+    'secondary': '#FFD15F',  # Accent
+}
+
 
 def root_layout():
     app.layout = html.Div(
@@ -62,7 +69,7 @@ def build_banner():
                 id='learn-more-button',
                 children="LEARN MORE",
                 n_clicks=0,
-                ),
+            ),
             html.Img(
                 src="https://s3-us-west-1.amazonaws.com/plotly-tutorials/logo/new-branding/dash-logo-by-plotly-stripe-inverted.png")
         ]
@@ -260,7 +267,8 @@ def set_value_setter_store(set_btn, param, data, usl, lsl, ucl, lcl):
 
 @app.callback(
     output=Output('value-setter-view-output', 'children'),
-    inputs=[Input('value-setter-view-btn', 'n_clicks'), Input('metric-select-dropdown', 'value'), Input('value-setter-store', 'data')]
+    inputs=[Input('value-setter-view-btn', 'n_clicks'), Input('metric-select-dropdown', 'value'),
+            Input('value-setter-store', 'data')]
 )
 def show_current_specs(n_clicks, dd_select, store_data):
     if n_clicks > 0:
@@ -287,7 +295,6 @@ def show_current_specs(n_clicks, dd_select, store_data):
         )
 
 
-
 @app.callback(
     output=Output('app-content', 'children'),
     inputs=[Input('app-tabs', 'value')]
@@ -296,7 +303,7 @@ def render_content(tab):
     if tab == 'tab1':
         return build_tab_1()
     elif tab == 'tab2':
-        return [
+        return daq.DarkThemeProvider(theme=theme, children=[
             html.Div(
                 id='status-container',
                 children=[
@@ -305,7 +312,7 @@ def render_content(tab):
                     build_chart_panel(),
                 ]
             )
-        ]
+        ])
 
 
 def build_quick_stats_panel():
@@ -321,8 +328,9 @@ def build_quick_stats_panel():
                     html.H5("Operator ID"),
                     daq.LEDDisplay(
                         value='1704',
-                        color="#000000",
-                        size=50
+                        color=theme['secondary'],
+                        size=50,
+                        theme=theme
                     )
                 ]
             ),
@@ -338,6 +346,7 @@ def build_quick_stats_panel():
                         size=150,
                         max=max_length * 2,
                         min=0,
+                        theme=theme
                     )
                 ]
             ),
@@ -425,7 +434,8 @@ def build_top_panel():
                         style={
                             'height': 'calc(100% - 90px)',
                             'width': '100%',
-                            'overflow': 'scroll'
+                            'overflow-x': 'hidden',
+                            'overflow-y': 'scroll'
                         },
                         children=[
                             generate_para1_row(),
@@ -460,16 +470,15 @@ def generate_piechart():
                     'labels': params[1:],
                     'values': [1, 1, 1, 1, 1],
                     'type': 'pie',
-                    'marker': {'colors': ['rgb(56, 75, 126)',
-                                          'rgb(18, 36, 37)',
-                                          'rgb(34, 53, 101)',
-                                          'rgb(36, 55, 57)',
-                                          'rgb(6, 4, 4)']},
+                    'marker': {'line': {'color': '#53555B', 'width': 2}},
                     'hoverinfo': 'label',
                     'textinfo': 'label'
                 }],
             'layout': {
-                'showlegend': True}
+                'showlegend': True,
+                'paper_bgcolor': 'rgb(45, 48, 56)',
+                'plot_bgcolor': 'rgb(45, 48, 56)'
+            }
         }
     )
 
@@ -576,7 +585,9 @@ def generate_metric_row_helper(index):
                     'layout': {
                         'margin': dict(
                             l=0, r=0, t=4, b=4, pad=0
-                        )
+                        ),
+                        'paper_bgcolor': 'rgb(45, 48, 56)',
+                        'plot_bgcolor': 'rgb(45, 48, 56)'
                     }
                 }))
         },
@@ -591,6 +602,7 @@ def generate_metric_row_helper(index):
                     id=ooc_graph_id,
                     color={"gradient": True, "ranges": {"green": [0, 3], "yellow": [3, 7], "red": [7, 15]}},
                     showCurrentValue=False,
+                    style={'width': '100%'},
                     max=15,
                     value=15
                 )
@@ -600,7 +612,7 @@ def generate_metric_row_helper(index):
             'children': daq.Indicator(
                 id=indicator_id,
                 value=True,
-                color='#00cc96'
+                color=theme['primary']
             )
         }
     )
@@ -685,7 +697,11 @@ def build_chart_panel():
             dcc.Graph(
                 id="control-chart-live",
                 figure=go.Figure({
-                    'data': [{'x': [], 'y': [], 'mode': 'lines+markers'}]
+                    'data': [{'x': [], 'y': [], 'mode': 'lines+markers'}],
+                    'layout': {
+                        'paper_bgcolor': 'rgb(45, 48, 56)',
+                        'plot_bgcolor': 'rgb(45, 48, 56)'
+                    }
                 }
                 )
             )
@@ -731,7 +747,8 @@ def generate_graph(interval, specs_dict, col):
         'orientation': 'h',
         'name': 'Distribution',
         'xaxis': 'x2',
-        'yaxis': 'y2'
+        'yaxis': 'y2',
+        'marker': {'color': 'rgb(255,209,95)'}
     }
 
     fig = {
@@ -740,7 +757,8 @@ def generate_graph(interval, specs_dict, col):
                 'x': x_array[:total_count],
                 'y': y_array[:total_count],
                 'mode': 'lines+markers',
-                'name': col
+                'name': col,
+                'line': {'color': 'rgb(255,209,95)'}
             },
             ooc_trace,
             histo_trace
@@ -750,32 +768,37 @@ def generate_graph(interval, specs_dict, col):
     len_figure = len(fig['data'][0]['x'])
 
     fig['layout'] = dict(
-        title='Individual measurements',
+        paper_bgcolor='rgb(45, 48, 56)',
+        plot_bgcolor='rgb(45, 48, 56)',
+        legend={'font': {'color': '#95969A'}},
+        font={'color': '#95969A'},
         showlegend=True,
         xaxis={
             'zeroline': False,
             'title': 'Batch_Num',
             'showline': False,
-            'domain': [0, 0.7]
+            'domain': [0, 0.7],
+            'titlefont': {'color': '#95969A'}
         },
         yaxis={
             'title': col,
-            'autorange': True
+            'autorange': True,
+            'titlefont': {'color': '#95969A'}
         },
         annotations=[
-            {'x': len_figure + 2, 'y': lcl, 'xref': 'x', 'yref': 'y',
+            {'x': 0.75, 'y': lcl, 'xref': 'paper', 'yref': 'y',
              'text': 'LCL:' + str(round(lcl, 3)),
-             'showarrow': True},
-            {'x': len_figure + 2, 'y': ucl, 'xref': 'x', 'yref': 'y',
+             'showarrow': False},
+            {'x': 0.75, 'y': ucl, 'xref': 'paper', 'yref': 'y',
              'text': 'UCL: ' + str(round(ucl, 3)),
-             'showarrow': True},
-            {'x': len_figure + 2, 'y': usl, 'xref': 'x', 'yref': 'y',
+             'showarrow': False},
+            {'x': 0.75, 'y': usl, 'xref': 'paper', 'yref': 'y',
              'text': 'USL: ' + str(round(usl, 3)),
-             'showarrow': True},
-            {'x': len_figure + 2, 'y': lsl, 'xref': 'x', 'yref': 'y',
+             'showarrow': False},
+            {'x': 0.75, 'y': lsl, 'xref': 'paper', 'yref': 'y',
              'text': 'LSL: ' + str(round(lsl, 3)),
-             'showarrow': True},
-            {'x': len_figure + 2, 'y': mean, 'xref': 'x', 'yref': 'y',
+             'showarrow': False},
+            {'x': 0.75, 'y': mean, 'xref': 'paper', 'yref': 'y',
              'text': 'Targeted mean: ' + str(round(mean, 3)),
              'showarrow': False}
         ],
@@ -786,7 +809,7 @@ def generate_graph(interval, specs_dict, col):
                 'yref': 'y',
                 'x0': 1,
                 'y0': usl,
-                'x1': len_figure + 2,
+                'x1': len_figure + 1,
                 'y1': usl,
                 'line': {
                     'color': 'rgb(50, 171, 96)',
@@ -800,7 +823,7 @@ def generate_graph(interval, specs_dict, col):
                 'yref': 'y',
                 'x0': 1,
                 'y0': lsl,
-                'x1': len_figure + 2,
+                'x1': len_figure + 1,
                 'y1': lsl,
                 'line': {
                     'color': 'rgb(50, 171, 96)',
@@ -814,7 +837,7 @@ def generate_graph(interval, specs_dict, col):
                 'yref': 'y',
                 'x0': 1,
                 'y0': ucl,
-                'x1': len_figure + 2,
+                'x1': len_figure + 1,
                 'y1': ucl,
                 'line': {
                     'color': 'rgb(255,127,80)',
@@ -828,7 +851,7 @@ def generate_graph(interval, specs_dict, col):
                 'yref': 'y',
                 'x0': 1,
                 'y0': mean,
-                'x1': len_figure + 2,
+                'x1': len_figure + 1,
                 'y1': mean,
                 'line': {
                     'color': 'rgb(255,127,80)',
@@ -841,7 +864,7 @@ def generate_graph(interval, specs_dict, col):
                 'yref': 'y',
                 'x0': 1,
                 'y0': lcl,
-                'x1': len_figure + 2,
+                'x1': len_figure + 1,
                 'y1': lcl,
                 'line': {
                     'color': 'rgb(255,127,80)',
@@ -852,12 +875,14 @@ def generate_graph(interval, specs_dict, col):
         ],
         xaxis2={
             'title': 'count',
-            'domain': [0.8, 1]  # 70 to 100 % of width
+            'domain': [0.8, 1],  # 70 to 100 % of width
+            'titlefont': {'color': '#95969A'}
         },
         yaxis2={
             'title': 'value',
             'anchor': 'x2',
-            'showticklabels': False
+            'showticklabels': False,
+            'titlefont': {'color': '#95969A'}
         }
     )
 
@@ -1035,14 +1060,16 @@ def update_spark_line_graph(interval, col):
         y_array = state_dict[col]['data'].tolist()
 
         data = [{'x': x_array[:total_count], 'y': y_array[:total_count], 'mode': 'lines+markers',
-                 'name': col}]
+                 'name': col, 'line': {'color': 'rgb(255,209,95)'}}]
 
     new_fig = go.Figure({
         'data': data,
         'layout': {
             'margin': dict(
                 l=0, r=0, t=4, b=4, pad=0
-            )
+            ),
+            'paper_bgcolor': 'rgb(45, 48, 56)',
+            'plot_bgcolor': 'rgb(45, 48, 56)'
         }
     })
 
@@ -1052,7 +1079,7 @@ def update_spark_line_graph(interval, col):
 # Update batch num, ooc percentage, ooc_grad_value and indicator color
 def update_count(interval, col, data):
     if interval == 0:
-        return '0', '0.00%', 0, '#00cc96'
+        return '0', '0.00%', 0, theme['primary']
 
     if interval >= max_length:
         total_count = max_length - 1
@@ -1069,7 +1096,7 @@ def update_count(interval, col, data):
     ooc_grad_val = float(ooc_percentage_f)
 
     if 0 <= ooc_grad_val <= 5:
-        color = '#00cc96'
+        color = theme['primary']
     else:
         color = '#FF0000'
 
@@ -1085,7 +1112,9 @@ def update_count(interval, col, data):
 )
 def update_piechart(interval, stored_data):
     if interval == 0:
-        return {}
+        return {'data': [], 'layout': {'font': {'color': '#95969A'},
+                                       'paper_bgcolor': 'rgb(45, 48, 56)',
+                                       'plot_bgcolor': 'rgb(45, 48, 56)'}}
 
     if interval >= max_length:
         total_count = max_length - 1
@@ -1100,7 +1129,7 @@ def update_piechart(interval, stored_data):
         if ooc_param > 6:
             colors.append('rgb(206,0,5)')
         else:
-            colors.append('rgb(76,178,51')
+            colors.append('rgb(0, 116, 57)')
 
     new_figure = {
         'data': [
@@ -1108,12 +1137,17 @@ def update_piechart(interval, stored_data):
                 'labels': params[1:],
                 'values': values,
                 'type': 'pie',
-                'marker': {'colors': colors, 'line': dict(color='#FFFFFF', width=2)},
+                'marker': {'colors': colors, 'line': dict(color='#53555B', width=2)},
                 'hoverinfo': 'label',
                 'textinfo': 'label'
             }],
         'layout': {
-            'showlegend': True}
+            'font': {'color': '#95969A'},
+            'showlegend': True,
+            'legend': {'font': {'color': '#95969A'}},
+            'paper_bgcolor': 'rgb(45, 48, 56)',
+            'plot_bgcolor': 'rgb(45, 48, 56)'
+        }
     }
     return new_figure
 
