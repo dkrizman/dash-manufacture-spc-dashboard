@@ -4,10 +4,10 @@
 This is a demo of Dash interactive Python framework developed by [Plotly](https//plot.ly/).
 
 ## Screenshots
-![initial](img/Screenshot.png)
+![initial](img/Screen_Shot.png)
 
 ## Screencast
-![Animated](img/Screencast.gif)
+![Animated](img/screencast.gif)
 
 ## Built With
 * [Dash](https://dash.plot.ly/) - Main server and interactive components 
@@ -22,7 +22,7 @@ git clone https://github.com/plotly/dash-manufacture-spc-dashboard.git
 cd dash-manufacture-spc-dashboard/
 python3 -m virtualenv venv
 ```
-In Linux: 
+In UNIX system: 
 
 ```
 source venv/bin/activate

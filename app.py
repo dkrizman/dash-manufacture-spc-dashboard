@@ -532,7 +532,7 @@ def generate_metric_row_helper(index):
                 id=button_id,
                 children=item,
                 title="Click to visualize live SPC chart",
-                n_clicks_timestamp=0
+                n_clicks=0
             )
         },
         {
@@ -669,7 +669,7 @@ def build_chart_panel():
             dcc.Graph(
                 id="control-chart-live",
                 figure=go.Figure({
-                    'data': [{'x': [], 'y': [], 'mode': 'lines+markers'}],
+                    'data': [{'x': [], 'y': [], 'mode': 'lines+markers', 'name': 'Metric1'}],
                     'layout': {
                         'paper_bgcolor': 'rgb(45, 48, 56)',
                         'plot_bgcolor': 'rgb(45, 48, 56)'
@@ -993,28 +993,32 @@ def update_param5_row(interval, stored_data):
         Input('Thickness1' + suffix_button_id, 'n_clicks'),
         Input('Width1' + suffix_button_id, 'n_clicks'),
     ],
-    state=[State("value-setter-store", 'data')]
+    state=[State("value-setter-store", 'data'), State('control-chart-live', 'figure')]
 )
-def update_control_chart(interval, p1, p2, p3, p4, p5, data):
-    if p1 == p2 == p3 == p4 == p5 == 0:
-        p1 = time.time()
+def update_control_chart(interval, n1, n2, n3, n4, n5, data, cur_fig):
+    # Find which one has been triggered
+    ctx = dash.callback_context
 
-    # first find out who clicked last
-    ts_list = {
-        'Metric1': p1,
-        'Metric2': p2,
-        'Metric3': p3,
-        'Thickness1': p4,
-        'Width1': p5
-    }
-    latest_clicked = '',
-    latest = 0
-    for key in ts_list:
-        if ts_list[key] > latest:
-            latest_clicked = key
-            latest = ts_list[key]
+    if not ctx.triggered:
+        return generate_graph(interval, data, 'Metric1')
 
-    return generate_graph(interval, data, latest_clicked)
+    if ctx.triggered:
+        # Get most recently triggered id and prop_type
+        splitted = ctx.triggered[0]['prop_id'].split('.')
+        prop_id = splitted[0]
+        prop_type = splitted[1]
+
+        if prop_type == 'n_clicks':
+            curr_id = cur_fig['data'][0]['name']
+            prop_id = prop_id[:-7]
+            if curr_id == prop_id:
+                return generate_graph(interval, data, curr_id)
+            else:
+                return generate_graph(interval, data, prop_id)
+
+        if prop_type == 'n_intervals' and cur_fig is not None:
+            curr_id = cur_fig['data'][0]['name']
+            return generate_graph(interval, data, curr_id)
 
 
 def update_spark_line_graph(interval, col):
