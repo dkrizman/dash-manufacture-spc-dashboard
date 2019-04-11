@@ -1,5 +1,3 @@
-import time
-
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
@@ -350,8 +348,7 @@ def build_quick_stats_panel():
                 id='utility-card',
                 className='four columns',
                 children=[
-                    daq.StopButton(id='stop-button', size=160, buttonText='start'),
-                    html.Button(id='print-report', children='print report')
+                    daq.StopButton(id='stop-button', size=160, buttonText='start')
                 ]
             )
         ]
@@ -1068,8 +1065,7 @@ def update_count(interval, col, data):
 
     ooc_percentage_f = data[col]['ooc'][total_count] * 100
     ooc_percentage_str = "%.2f" % ooc_percentage_f + '%'
-    # if col == 'Para5':
-    #     print(interval, total_count, ooc_percentage_f)
+
     if ooc_percentage_f > 15:
         ooc_percentage_f = 15
 
