@@ -13,7 +13,6 @@ import pandas as pd
 
 app = dash.Dash(__name__)
 server = app.server
-app.scripts.config.serve_locally = True
 app.config['suppress_callback_exceptions'] = True
 
 df = pd.read_csv("data/spc_data.csv")
@@ -40,16 +39,13 @@ theme = {
 def root_layout():
     app.layout = html.Div(
         children=[
-            # Banner
             build_banner(),
-            # Tabs
             build_tabs(),
             # Main app
             html.Div(
                 id='app-content',
                 className='container scalable'
             ),
-            # html.Button('Proceed to measure', id='tab-trigger-btn', n_clicks=0, style={'display': 'inline'}),
             dcc.Store(
                 id='value-setter-store',
                 data=init_value_setter_store()
@@ -222,7 +218,6 @@ def build_value_setter_line(line_num, label, value, col3):
 )
 def build_value_setter_panel(dd_select, state_value):
     return [
-               # html.Label(dd_select),
                build_value_setter_line('value-setter-panel-header', 'Specs', 'Historical Value', 'Set new value'),
                build_value_setter_line('value-setter-panel-usl', 'Upper Specification limit',
                                        state_dict[dd_select]['usl'], ud_usl_input),
@@ -438,11 +433,11 @@ def build_top_panel():
                             'overflow-y': 'scroll'
                         },
                         children=[
-                            generate_para1_row(),
-                            generate_para2_row(),
-                            generate_para3_row(),
-                            generate_para4_row(),
-                            generate_para5_row()
+                            generate_metric_row_helper(1),
+                            generate_metric_row_helper(2),
+                            generate_metric_row_helper(3),
+                            generate_metric_row_helper(4),
+                            generate_metric_row_helper(5)
                         ]
                     )
                 ]
@@ -518,26 +513,6 @@ def generate_metric_list_header():
         })
 
 
-def generate_para1_row():
-    return generate_metric_row_helper(1)
-
-
-def generate_para2_row():
-    return generate_metric_row_helper(2)
-
-
-def generate_para3_row():
-    return generate_metric_row_helper(3)
-
-
-def generate_para4_row():
-    return generate_metric_row_helper(4)
-
-
-def generate_para5_row():
-    return generate_metric_row_helper(5)
-
-
 def generate_metric_row_helper(index):
     item = params[index]
 
@@ -557,10 +532,7 @@ def generate_metric_row_helper(index):
                 id=button_id,
                 children=item,
                 title="Click to visualize live SPC chart",
-                n_clicks_timestamp=0,
-                # style={
-                #     'width': '100%'
-                # }
+                n_clicks_timestamp=0
             )
         },
         {
@@ -1015,11 +987,11 @@ def update_param5_row(interval, stored_data):
     output=Output('control-chart-live', 'figure'),
     inputs=[
         Input('interval-component', 'n_intervals'),
-        Input('Metric1' + suffix_button_id, 'n_clicks_timestamp'),
-        Input('Metric2' + suffix_button_id, 'n_clicks_timestamp'),
-        Input('Metric3' + suffix_button_id, 'n_clicks_timestamp'),
-        Input('Thickness1' + suffix_button_id, 'n_clicks_timestamp'),
-        Input('Width1' + suffix_button_id, 'n_clicks_timestamp'),
+        Input('Metric1' + suffix_button_id, 'n_clicks'),
+        Input('Metric2' + suffix_button_id, 'n_clicks'),
+        Input('Metric3' + suffix_button_id, 'n_clicks'),
+        Input('Thickness1' + suffix_button_id, 'n_clicks'),
+        Input('Width1' + suffix_button_id, 'n_clicks'),
     ],
     state=[State("value-setter-store", 'data')]
 )
@@ -1156,4 +1128,4 @@ root_layout()
 
 # Running the server
 if __name__ == '__main__':
-    app.run_server(dev_tools_hot_reload=False, debug=True, host='0.0.0.0', port=8051, use_reloader=False)
+    app.run_server(debug=True, port=8050)
