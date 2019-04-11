@@ -865,10 +865,14 @@ def generate_graph(interval, specs_dict, col):
 @app.callback(Output("markdown", "style"),
               [Input("learn-more-button", "n_clicks"), Input("markdown_close", "n_clicks")])
 def update_click_output(button_click, close_click):
-    if button_click > close_click:
-        return {"display": "block"}
-    else:
-        return {"display": "none"}
+    ctx = dash.callback_context
+
+    if ctx.triggered:
+        prop_id = ctx.triggered[0]['prop_id'].split('.')[0]
+        if prop_id == "learn-more-button":
+            return {"display": "block"}
+
+    return {'display': 'none'}
 
 
 # Callbacks for stopping interval update
