@@ -412,7 +412,10 @@ def build_top_panel():
                             generate_metric_row_helper(2),
                             generate_metric_row_helper(3),
                             generate_metric_row_helper(4),
-                            generate_metric_row_helper(5)
+                            generate_metric_row_helper(5),
+                            generate_metric_row_helper(6),
+                            generate_metric_row_helper(7),
+
                         ]
                     )
                 ]
@@ -438,7 +441,7 @@ def generate_piechart():
             'data': [
                 {
                     'labels': params[1:],
-                    'values': [1, 1, 1, 1, 1],
+                    'values': [1, 1, 1, 1, 1, 1, 1],
                     'type': 'pie',
                     'marker': {'line': {'color': '#53555B', 'width': 2}},
                     'hoverinfo': 'label',
@@ -674,7 +677,7 @@ def generate_graph(interval, specs_dict, col):
     if interval > max_length:
         total_count = max_length - 1
     elif interval > 0:
-        total_count = interval - 1
+        total_count = interval
 
     ooc_trace = {'x': [],
                  'y': [],
@@ -1025,6 +1028,40 @@ def update_param5_row(interval, stored_data):
     return count, spark_line_data, ooc_n, ooc_g_value, indicator
 
 
+@app.callback(
+    output=[
+        Output('Metric4' + suffix_count, 'children'),
+        Output('Metric4' + suffix_sparkline_graph, 'extendData'),
+        Output('Metric4' + suffix_ooc_n, 'children'),
+        Output('Metric4' + suffix_ooc_g, 'value'),
+        Output('Metric4' + suffix_indicator, 'color')
+    ],
+    inputs=[Input('interval-component', 'n_intervals')],
+    state=[State('value-setter-store', 'data')]
+)
+def update_param5_row(interval, stored_data):
+    count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Metric4', stored_data)
+    spark_line_data = update_sparkline(interval, 'Metric4')
+    return count, spark_line_data, ooc_n, ooc_g_value, indicator
+
+
+@app.callback(
+    output=[
+        Output('Para1' + suffix_count, 'children'),
+        Output('Para1' + suffix_sparkline_graph, 'extendData'),
+        Output('Para1' + suffix_ooc_n, 'children'),
+        Output('Para1' + suffix_ooc_g, 'value'),
+        Output('Para1' + suffix_indicator, 'color')
+    ],
+    inputs=[Input('interval-component', 'n_intervals')],
+    state=[State('value-setter-store', 'data')]
+)
+def update_param5_row(interval, stored_data):
+    count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Para1', stored_data)
+    spark_line_data = update_sparkline(interval, 'Para1')
+    return count, spark_line_data, ooc_n, ooc_g_value, indicator
+
+
 #  ======= button to choose/update figure based on click ============
 @app.callback(
     output=Output('control-chart-live', 'figure'),
@@ -1035,10 +1072,12 @@ def update_param5_row(interval, stored_data):
         Input('Metric3' + suffix_button_id, 'n_clicks'),
         Input('Thickness1' + suffix_button_id, 'n_clicks'),
         Input('Width1' + suffix_button_id, 'n_clicks'),
+        Input('Metric4' + suffix_button_id, 'n_clicks'),
+        Input('Para1' + suffix_button_id, 'n_clicks'),
     ],
     state=[State("value-setter-store", 'data'), State('control-chart-live', 'figure')]
 )
-def update_control_chart(interval, n1, n2, n3, n4, n5, data, cur_fig):
+def update_control_chart(interval, n1, n2, n3, n4, n5, n6, n7, data, cur_fig):
     # Find which one has been triggered
     ctx = dash.callback_context
 
