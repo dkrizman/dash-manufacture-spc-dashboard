@@ -550,7 +550,8 @@ def generate_metric_row_helper(index):
                     'displayModeBar': False
                 },
                 figure=go.Figure({
-                    'data': [{'x': [], 'y': [], 'mode': 'lines+markers', 'name': item}],
+                    'data': [{'x': [], 'y': [], 'mode': 'lines+markers', 'name': item,
+                              'line': {'color': 'rgb(255,209,95)'}}],
                     'layout': {
                         'margin': dict(
                             l=0, r=0, t=4, b=4, pad=0
@@ -655,7 +656,7 @@ def build_chart_panel():
 
             dcc.Interval(
                 id='interval-component',
-                interval=2 * 1000,  # in milliseconds
+                interval=1 * 1000,  # in milliseconds
                 n_intervals=0,
                 disabled=True
             ),
@@ -901,7 +902,7 @@ def update_gauge(interval):
 @app.callback(
     output=[
         Output('Metric1' + suffix_count, 'children'),
-        Output('Metric1' + suffix_sparkline_graph, 'figure'),
+        Output('Metric1' + suffix_sparkline_graph, 'extendData'),
         Output('Metric1' + suffix_ooc_n, 'children'),
         Output('Metric1' + suffix_ooc_g, 'value'),
         Output('Metric1' + suffix_indicator, 'color')
@@ -911,14 +912,30 @@ def update_gauge(interval):
 )
 def update_param1_row(interval, stored_data):
     count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Metric1', stored_data)
-    spark_line_graph = update_spark_line_graph(interval, 'Metric1')
-    return count, spark_line_graph, ooc_n, ooc_g_value, indicator
+
+    x_array = state_dict['Batch']['data'].tolist()
+    y_array = state_dict['Metric1']['data'].tolist()
+
+    if interval == 0:
+        x_new = y_new = None
+
+    else:
+        if interval >= max_length:
+            total_count = max_length
+        else:
+            total_count = interval
+        x_new = x_array[:total_count][-1]
+        y_new = y_array[:total_count][-1]
+
+    spark_line_data = dict(x=[[x_new]], y=[[y_new]]), [0]
+
+    return count, spark_line_data, ooc_n, ooc_g_value, indicator
 
 
 @app.callback(
     output=[
         Output('Metric2' + suffix_count, 'children'),
-        Output('Metric2' + suffix_sparkline_graph, 'figure'),
+        Output('Metric2' + suffix_sparkline_graph, 'extendData'),
         Output('Metric2' + suffix_ooc_n, 'children'),
         Output('Metric2' + suffix_ooc_g, 'value'),
         Output('Metric2' + suffix_indicator, 'color')
@@ -928,14 +945,30 @@ def update_param1_row(interval, stored_data):
 )
 def update_param2_row(interval, stored_data):
     count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Metric2', stored_data)
-    spark_line_graph = update_spark_line_graph(interval, 'Metric2')
-    return count, spark_line_graph, ooc_n, ooc_g_value, indicator
+
+    x_array = state_dict['Batch']['data'].tolist()
+    y_array = state_dict['Metric2']['data'].tolist()
+
+    if interval == 0:
+        x_new = y_new = None
+
+    else:
+        if interval >= max_length:
+            total_count = max_length
+        else:
+            total_count = interval
+        x_new = x_array[:total_count][-1]
+        y_new = y_array[:total_count][-1]
+
+    spark_line_data = dict(x=[[x_new]], y=[[y_new]]), [0]
+
+    return count, spark_line_data, ooc_n, ooc_g_value, indicator
 
 
 @app.callback(
     output=[
         Output('Metric3' + suffix_count, 'children'),
-        Output('Metric3' + suffix_sparkline_graph, 'figure'),
+        Output('Metric3' + suffix_sparkline_graph, 'extendData'),
         Output('Metric3' + suffix_ooc_n, 'children'),
         Output('Metric3' + suffix_ooc_g, 'value'),
         Output('Metric3' + suffix_indicator, 'color')
@@ -945,14 +978,30 @@ def update_param2_row(interval, stored_data):
 )
 def update_param3_row(interval, stored_data):
     count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Metric3', stored_data)
-    spark_line_graph = update_spark_line_graph(interval, 'Metric3')
-    return count, spark_line_graph, ooc_n, ooc_g_value, indicator
+
+    x_array = state_dict['Batch']['data'].tolist()
+    y_array = state_dict['Metric3']['data'].tolist()
+
+    if interval == 0:
+        x_new = y_new = None
+
+    else:
+        if interval >= max_length:
+            total_count = max_length
+        else:
+            total_count = interval
+        x_new = x_array[:total_count][-1]
+        y_new = y_array[:total_count][-1]
+
+    spark_line_data = dict(x=[[x_new]], y=[[y_new]]), [0]
+
+    return count, spark_line_data, ooc_n, ooc_g_value, indicator
 
 
 @app.callback(
     output=[
         Output('Thickness1' + suffix_count, 'children'),
-        Output('Thickness1' + suffix_sparkline_graph, 'figure'),
+        Output('Thickness1' + suffix_sparkline_graph, 'extendData'),
         Output('Thickness1' + suffix_ooc_n, 'children'),
         Output('Thickness1' + suffix_ooc_g, 'value'),
         Output('Thickness1' + suffix_indicator, 'color')
@@ -962,14 +1011,30 @@ def update_param3_row(interval, stored_data):
 )
 def update_param4_row(interval, stored_data):
     count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Thickness1', stored_data)
-    spark_line_graph = update_spark_line_graph(interval, 'Thickness1')
-    return count, spark_line_graph, ooc_n, ooc_g_value, indicator
+
+    x_array = state_dict['Batch']['data'].tolist()
+    y_array = state_dict['Thickness1']['data'].tolist()
+
+    if interval == 0:
+        x_new = y_new = None
+
+    else:
+        if interval >= max_length:
+            total_count = max_length
+        else:
+            total_count = interval
+        x_new = x_array[:total_count][-1]
+        y_new = y_array[:total_count][-1]
+
+    spark_line_data = dict(x=[[x_new]], y=[[y_new]]), [0]
+
+    return count, spark_line_data, ooc_n, ooc_g_value, indicator
 
 
 @app.callback(
     output=[
         Output('Width1' + suffix_count, 'children'),
-        Output('Width1' + suffix_sparkline_graph, 'figure'),
+        Output('Width1' + suffix_sparkline_graph, 'extendData'),
         Output('Width1' + suffix_ooc_n, 'children'),
         Output('Width1' + suffix_ooc_g, 'value'),
         Output('Width1' + suffix_indicator, 'color')
@@ -979,8 +1044,24 @@ def update_param4_row(interval, stored_data):
 )
 def update_param5_row(interval, stored_data):
     count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Width1', stored_data)
-    spark_line_graph = update_spark_line_graph(interval, 'Width1')
-    return count, spark_line_graph, ooc_n, ooc_g_value, indicator
+
+    x_array = state_dict['Batch']['data'].tolist()
+    y_array = state_dict['Width1']['data'].tolist()
+
+    if interval == 0:
+        x_new = y_new = None
+
+    else:
+        if interval >= max_length:
+            total_count = max_length
+        else:
+            total_count = interval
+        x_new = x_array[:total_count][-1]
+        y_new = y_array[:total_count][-1]
+
+    spark_line_data = dict(x=[[x_new]], y=[[y_new]]), [0]
+
+    return count, spark_line_data, ooc_n, ooc_g_value, indicator
 
 
 #  ======= button to choose/update figure based on click ============
@@ -1022,38 +1103,6 @@ def update_control_chart(interval, n1, n2, n3, n4, n5, data, cur_fig):
             return generate_graph(interval, data, curr_id)
 
 
-def update_spark_line_graph(interval, col):
-    if interval == 0:
-        data = [{'x': [], 'y': [], 'mode': 'lines+markers',
-                 'name': col}]
-    # update spark line graph
-    else:
-        if interval >= max_length:
-            total_count = max_length - 1
-        else:
-            total_count = interval - 1
-
-        x_array = state_dict['Batch']['data'].tolist()
-        y_array = state_dict[col]['data'].tolist()
-
-        data = [{'x': x_array[:total_count], 'y': y_array[:total_count], 'mode': 'lines+markers',
-                 'name': col, 'line': {'color': 'rgb(255,209,95)'}}]
-
-    new_fig = go.Figure({
-        'data': data,
-        'layout': {
-            'margin': dict(
-                l=0, r=0, t=4, b=4, pad=0
-            ),
-            'paper_bgcolor': 'rgb(45, 48, 56)',
-            'plot_bgcolor': 'rgb(45, 48, 56)'
-        }
-    })
-
-    return new_fig
-
-
-# Update batch num, ooc percentage, ooc_grad_value and indicator color
 def update_count(interval, col, data):
     if interval == 0:
         return '0', '0.00%', 0, theme['primary']
@@ -1076,7 +1125,7 @@ def update_count(interval, col, data):
     else:
         color = '#FF0000'
 
-    return str(total_count), ooc_percentage_str, ooc_grad_val, color
+    return str(total_count + 1), ooc_percentage_str, ooc_grad_val, color
 
 
 # Update piechart
