@@ -1039,7 +1039,7 @@ def update_param5_row(interval, stored_data):
     inputs=[Input('interval-component', 'n_intervals')],
     state=[State('value-setter-store', 'data')]
 )
-def update_param5_row(interval, stored_data):
+def update_param6_row(interval, stored_data):
     count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Metric4', stored_data)
     spark_line_data = update_sparkline(interval, 'Metric4')
     return count, spark_line_data, ooc_n, ooc_g_value, indicator
@@ -1056,7 +1056,7 @@ def update_param5_row(interval, stored_data):
     inputs=[Input('interval-component', 'n_intervals')],
     state=[State('value-setter-store', 'data')]
 )
-def update_param5_row(interval, stored_data):
+def update_param7_row(interval, stored_data):
     count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Para1', stored_data)
     spark_line_data = update_sparkline(interval, 'Para1')
     return count, spark_line_data, ooc_n, ooc_g_value, indicator
