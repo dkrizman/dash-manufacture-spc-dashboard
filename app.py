@@ -34,25 +34,6 @@ theme = {
 }
 
 
-def root_layout():
-    app.layout = html.Div(
-        children=[
-            build_banner(),
-            build_tabs(),
-            # Main app
-            html.Div(
-                id='app-content',
-                className='container scalable'
-            ),
-            dcc.Store(
-                id='value-setter-store',
-                data=init_value_setter_store()
-            ),
-            generate_modal(),
-        ]
-    )
-
-
 def build_banner():
     return html.Div(
         id='banner',
@@ -203,6 +184,66 @@ def build_value_setter_line(line_num, label, value, col3):
     )
 
 
+def generate_modal():
+    return html.Div(
+        id='markdown',
+        className="modal",
+        style={'display': 'none'},
+        children=(
+            html.Div(
+                id="markdown-container",
+                className="markdown-container",
+                children=[
+                    html.Div(
+                        className='close-container',
+                        children=html.Button(
+                            "Close",
+                            id="markdown_close",
+                            n_clicks=0,
+                            className="closeButton"
+                        )
+                    ),
+                    html.Div(
+                        className='markdown-text',
+                        children=dcc.Markdown(
+                            children=dedent('''
+                        **What is this mock app about?**
+
+                        'dash-manufacture-spc-dashboard` is a dashboard for monitoring read-time process quality along manufacture production line. 
+
+                        **What does this app shows**
+
+                        Click on buttons in `Parameter' column to visualize details of measurement trendlines on the bottom panel.
+
+                        The Sparkline on top panel and Control chart on bottom panel show Shewhart process monitor using mock data. 
+                        The trend is updated every second to simulate real-time measurements. Data falling outside of six-sigma control limit are signals indicating 'Out of Control(OOC)', and will 
+                        trigger alerts instantly for a detailed checkup. 
+                    '''))
+                    )
+                ]
+            )
+        )
+    )
+
+
+app.layout = html.Div(
+    children=[
+        build_banner(),
+        build_tabs(),
+        # Main app
+        html.Div(
+            id='app-content',
+            className='container scalable'
+        ),
+        dcc.Store(
+            id='value-setter-store',
+            data=init_value_setter_store()
+        ),
+        generate_modal(),
+    ]
+)
+
+
 # ===== Callbacks to update values based on store data and dropdown selection =====
 @app.callback(
     output=[
@@ -288,26 +329,6 @@ def show_current_specs(n_clicks, dd_select, store_data):
         )
 
 
-@app.callback(
-    output=Output('app-content', 'children'),
-    inputs=[Input('app-tabs', 'value')]
-)
-def render_content(tab):
-    if tab == 'tab1':
-        return build_tab_1()
-    elif tab == 'tab2':
-        return daq.DarkThemeProvider(theme=theme, children=[
-            html.Div(
-                id='status-container',
-                children=[
-                    build_quick_stats_panel(),
-                    build_top_panel(),
-                    build_chart_panel(),
-                ]
-            )
-        ])
-
-
 def build_quick_stats_panel():
     return html.Div(
         id="quick-stats",
@@ -355,49 +376,6 @@ def build_quick_stats_panel():
     )
 
 
-def generate_modal():
-    return html.Div(
-        id='markdown',
-        className="modal",
-        style={'display': 'none'},
-        children=(
-            html.Div(
-                id="markdown-container",
-                className="markdown-container",
-                children=[
-                    html.Div(
-                        className='close-container',
-                        children=html.Button(
-                            "Close",
-                            id="markdown_close",
-                            n_clicks=0,
-                            className="closeButton"
-                        )
-                    ),
-                    html.Div(
-                        className='markdown-text',
-                        children=dcc.Markdown(
-                            children=dedent('''
-                        **What is this mock app about?**
-                        
-                        'dash-manufacture-spc-dashboard` is a dashboard for monitoring read-time process quality along manufacture production line. 
-
-                        **What does this app shows**
-                        
-                        Click on buttons in `Parameter' column to visualize details of measurement trendlines on the bottom panel.
-                        
-                        The Sparkline on top panel and Control chart on bottom panel show Shewhart process monitor using mock data. 
-                        The trend is updated every two seconds to simulate real-time measurements. Data falling outside of six-sigma control limit are signals indicating 'Out of Control(OOC)', and will 
-                        trigger alerts instantly for a detailed checkup. 
-                    ''')
-                        )
-                    )
-                ]
-            )
-        )
-    )
-
-
 def generate_section_banner(title):
     return html.Div(
         className="section-banner",
@@ -434,7 +412,10 @@ def build_top_panel():
                             generate_metric_row_helper(2),
                             generate_metric_row_helper(3),
                             generate_metric_row_helper(4),
-                            generate_metric_row_helper(5)
+                            generate_metric_row_helper(5),
+                            generate_metric_row_helper(6),
+                            generate_metric_row_helper(7),
+
                         ]
                     )
                 ]
@@ -460,7 +441,7 @@ def generate_piechart():
             'data': [
                 {
                     'labels': params[1:],
-                    'values': [1, 1, 1, 1, 1],
+                    'values': [1, 1, 1, 1, 1, 1, 1],
                     'type': 'pie',
                     'marker': {'line': {'color': '#53555B', 'width': 2}},
                     'hoverinfo': 'label',
@@ -550,7 +531,8 @@ def generate_metric_row_helper(index):
                     'displayModeBar': False
                 },
                 figure=go.Figure({
-                    'data': [{'x': [], 'y': [], 'mode': 'lines+markers', 'name': item}],
+                    'data': [{'x': [], 'y': [], 'mode': 'lines+markers', 'name': item,
+                              'line': {'color': 'rgb(255,209,95)'}}],
                     'layout': {
                         'margin': dict(
                             l=0, r=0, t=4, b=4, pad=0
@@ -655,7 +637,7 @@ def build_chart_panel():
 
             dcc.Interval(
                 id='interval-component',
-                interval=2 * 1000,  # in milliseconds
+                interval=1 * 1000,  # in milliseconds
                 n_intervals=0,
                 disabled=True
             ),
@@ -695,7 +677,7 @@ def generate_graph(interval, specs_dict, col):
     if interval > max_length:
         total_count = max_length - 1
     elif interval > 0:
-        total_count = interval - 1
+        total_count = interval
 
     ooc_trace = {'x': [],
                  'y': [],
@@ -858,6 +840,26 @@ def generate_graph(interval, specs_dict, col):
     return fig
 
 
+@app.callback(
+    output=Output('app-content', 'children'),
+    inputs=[Input('app-tabs', 'value')]
+)
+def render_content(tab):
+    if tab == 'tab1':
+        return build_tab_1()
+    elif tab == 'tab2':
+        return daq.DarkThemeProvider(theme=theme, children=[
+            html.Div(
+                id='status-container',
+                children=[
+                    build_quick_stats_panel(),
+                    build_top_panel(),
+                    build_chart_panel(),
+                ]
+            )
+        ])
+
+
 # ======= Callbacks for modal popup =======
 @app.callback(Output("markdown", "style"),
               [Input("learn-more-button", "n_clicks"), Input("markdown_close", "n_clicks")])
@@ -897,11 +899,54 @@ def update_gauge(interval):
     return int(total_count)
 
 
+def update_sparkline(interval, param):
+    x_array = state_dict['Batch']['data'].tolist()
+    y_array = state_dict[param]['data'].tolist()
+
+    if interval == 0:
+        x_new = y_new = None
+
+    else:
+        if interval >= max_length:
+            total_count = max_length
+        else:
+            total_count = interval
+        x_new = x_array[:total_count][-1]
+        y_new = y_array[:total_count][-1]
+
+    return dict(x=[[x_new]], y=[[y_new]]), [0]
+
+
+def update_count(interval, col, data):
+    if interval == 0:
+        return '0', '0.00%', 0, theme['primary']
+
+    if interval >= max_length:
+        total_count = max_length - 1
+    else:
+        total_count = interval - 1
+
+    ooc_percentage_f = data[col]['ooc'][total_count] * 100
+    ooc_percentage_str = "%.2f" % ooc_percentage_f + '%'
+
+    if ooc_percentage_f > 15:
+        ooc_percentage_f = 15
+
+    ooc_grad_val = float(ooc_percentage_f)
+
+    if 0 <= ooc_grad_val <= 5:
+        color = theme['primary']
+    else:
+        color = '#FF0000'
+
+    return str(total_count + 1), ooc_percentage_str, ooc_grad_val, color
+
+
 # ======= update each row at interval =========
 @app.callback(
     output=[
         Output('Metric1' + suffix_count, 'children'),
-        Output('Metric1' + suffix_sparkline_graph, 'figure'),
+        Output('Metric1' + suffix_sparkline_graph, 'extendData'),
         Output('Metric1' + suffix_ooc_n, 'children'),
         Output('Metric1' + suffix_ooc_g, 'value'),
         Output('Metric1' + suffix_indicator, 'color')
@@ -911,14 +956,14 @@ def update_gauge(interval):
 )
 def update_param1_row(interval, stored_data):
     count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Metric1', stored_data)
-    spark_line_graph = update_spark_line_graph(interval, 'Metric1')
-    return count, spark_line_graph, ooc_n, ooc_g_value, indicator
+    spark_line_data = update_sparkline(interval, 'Metric1')
+    return count, spark_line_data, ooc_n, ooc_g_value, indicator
 
 
 @app.callback(
     output=[
         Output('Metric2' + suffix_count, 'children'),
-        Output('Metric2' + suffix_sparkline_graph, 'figure'),
+        Output('Metric2' + suffix_sparkline_graph, 'extendData'),
         Output('Metric2' + suffix_ooc_n, 'children'),
         Output('Metric2' + suffix_ooc_g, 'value'),
         Output('Metric2' + suffix_indicator, 'color')
@@ -928,14 +973,14 @@ def update_param1_row(interval, stored_data):
 )
 def update_param2_row(interval, stored_data):
     count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Metric2', stored_data)
-    spark_line_graph = update_spark_line_graph(interval, 'Metric2')
-    return count, spark_line_graph, ooc_n, ooc_g_value, indicator
+    spark_line_data = update_sparkline(interval, 'Metric2')
+    return count, spark_line_data, ooc_n, ooc_g_value, indicator
 
 
 @app.callback(
     output=[
         Output('Metric3' + suffix_count, 'children'),
-        Output('Metric3' + suffix_sparkline_graph, 'figure'),
+        Output('Metric3' + suffix_sparkline_graph, 'extendData'),
         Output('Metric3' + suffix_ooc_n, 'children'),
         Output('Metric3' + suffix_ooc_g, 'value'),
         Output('Metric3' + suffix_indicator, 'color')
@@ -945,14 +990,14 @@ def update_param2_row(interval, stored_data):
 )
 def update_param3_row(interval, stored_data):
     count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Metric3', stored_data)
-    spark_line_graph = update_spark_line_graph(interval, 'Metric3')
-    return count, spark_line_graph, ooc_n, ooc_g_value, indicator
+    spark_line_data = update_sparkline(interval, 'Metric3')
+    return count, spark_line_data, ooc_n, ooc_g_value, indicator
 
 
 @app.callback(
     output=[
         Output('Thickness1' + suffix_count, 'children'),
-        Output('Thickness1' + suffix_sparkline_graph, 'figure'),
+        Output('Thickness1' + suffix_sparkline_graph, 'extendData'),
         Output('Thickness1' + suffix_ooc_n, 'children'),
         Output('Thickness1' + suffix_ooc_g, 'value'),
         Output('Thickness1' + suffix_indicator, 'color')
@@ -962,14 +1007,14 @@ def update_param3_row(interval, stored_data):
 )
 def update_param4_row(interval, stored_data):
     count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Thickness1', stored_data)
-    spark_line_graph = update_spark_line_graph(interval, 'Thickness1')
-    return count, spark_line_graph, ooc_n, ooc_g_value, indicator
+    spark_line_data = update_sparkline(interval, 'Thickness1')
+    return count, spark_line_data, ooc_n, ooc_g_value, indicator
 
 
 @app.callback(
     output=[
         Output('Width1' + suffix_count, 'children'),
-        Output('Width1' + suffix_sparkline_graph, 'figure'),
+        Output('Width1' + suffix_sparkline_graph, 'extendData'),
         Output('Width1' + suffix_ooc_n, 'children'),
         Output('Width1' + suffix_ooc_g, 'value'),
         Output('Width1' + suffix_indicator, 'color')
@@ -979,8 +1024,42 @@ def update_param4_row(interval, stored_data):
 )
 def update_param5_row(interval, stored_data):
     count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Width1', stored_data)
-    spark_line_graph = update_spark_line_graph(interval, 'Width1')
-    return count, spark_line_graph, ooc_n, ooc_g_value, indicator
+    spark_line_data = update_sparkline(interval, 'Width1')
+    return count, spark_line_data, ooc_n, ooc_g_value, indicator
+
+
+@app.callback(
+    output=[
+        Output('Metric4' + suffix_count, 'children'),
+        Output('Metric4' + suffix_sparkline_graph, 'extendData'),
+        Output('Metric4' + suffix_ooc_n, 'children'),
+        Output('Metric4' + suffix_ooc_g, 'value'),
+        Output('Metric4' + suffix_indicator, 'color')
+    ],
+    inputs=[Input('interval-component', 'n_intervals')],
+    state=[State('value-setter-store', 'data')]
+)
+def update_param6_row(interval, stored_data):
+    count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Metric4', stored_data)
+    spark_line_data = update_sparkline(interval, 'Metric4')
+    return count, spark_line_data, ooc_n, ooc_g_value, indicator
+
+
+@app.callback(
+    output=[
+        Output('Para1' + suffix_count, 'children'),
+        Output('Para1' + suffix_sparkline_graph, 'extendData'),
+        Output('Para1' + suffix_ooc_n, 'children'),
+        Output('Para1' + suffix_ooc_g, 'value'),
+        Output('Para1' + suffix_indicator, 'color')
+    ],
+    inputs=[Input('interval-component', 'n_intervals')],
+    state=[State('value-setter-store', 'data')]
+)
+def update_param7_row(interval, stored_data):
+    count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Para1', stored_data)
+    spark_line_data = update_sparkline(interval, 'Para1')
+    return count, spark_line_data, ooc_n, ooc_g_value, indicator
 
 
 #  ======= button to choose/update figure based on click ============
@@ -993,10 +1072,12 @@ def update_param5_row(interval, stored_data):
         Input('Metric3' + suffix_button_id, 'n_clicks'),
         Input('Thickness1' + suffix_button_id, 'n_clicks'),
         Input('Width1' + suffix_button_id, 'n_clicks'),
+        Input('Metric4' + suffix_button_id, 'n_clicks'),
+        Input('Para1' + suffix_button_id, 'n_clicks'),
     ],
     state=[State("value-setter-store", 'data'), State('control-chart-live', 'figure')]
 )
-def update_control_chart(interval, n1, n2, n3, n4, n5, data, cur_fig):
+def update_control_chart(interval, n1, n2, n3, n4, n5, n6, n7, data, cur_fig):
     # Find which one has been triggered
     ctx = dash.callback_context
 
@@ -1020,63 +1101,6 @@ def update_control_chart(interval, n1, n2, n3, n4, n5, data, cur_fig):
         if prop_type == 'n_intervals' and cur_fig is not None:
             curr_id = cur_fig['data'][0]['name']
             return generate_graph(interval, data, curr_id)
-
-
-def update_spark_line_graph(interval, col):
-    if interval == 0:
-        data = [{'x': [], 'y': [], 'mode': 'lines+markers',
-                 'name': col}]
-    # update spark line graph
-    else:
-        if interval >= max_length:
-            total_count = max_length - 1
-        else:
-            total_count = interval - 1
-
-        x_array = state_dict['Batch']['data'].tolist()
-        y_array = state_dict[col]['data'].tolist()
-
-        data = [{'x': x_array[:total_count], 'y': y_array[:total_count], 'mode': 'lines+markers',
-                 'name': col, 'line': {'color': 'rgb(255,209,95)'}}]
-
-    new_fig = go.Figure({
-        'data': data,
-        'layout': {
-            'margin': dict(
-                l=0, r=0, t=4, b=4, pad=0
-            ),
-            'paper_bgcolor': 'rgb(45, 48, 56)',
-            'plot_bgcolor': 'rgb(45, 48, 56)'
-        }
-    })
-
-    return new_fig
-
-
-# Update batch num, ooc percentage, ooc_grad_value and indicator color
-def update_count(interval, col, data):
-    if interval == 0:
-        return '0', '0.00%', 0, theme['primary']
-
-    if interval >= max_length:
-        total_count = max_length - 1
-    else:
-        total_count = interval - 1
-
-    ooc_percentage_f = data[col]['ooc'][total_count] * 100
-    ooc_percentage_str = "%.2f" % ooc_percentage_f + '%'
-
-    if ooc_percentage_f > 15:
-        ooc_percentage_f = 15
-
-    ooc_grad_val = float(ooc_percentage_f)
-
-    if 0 <= ooc_grad_val <= 5:
-        color = theme['primary']
-    else:
-        color = '#FF0000'
-
-    return str(total_count), ooc_percentage_str, ooc_grad_val, color
 
 
 # Update piechart
@@ -1127,8 +1151,6 @@ def update_piechart(interval, stored_data):
     }
     return new_figure
 
-
-root_layout()
 
 # Running the server
 if __name__ == '__main__':
