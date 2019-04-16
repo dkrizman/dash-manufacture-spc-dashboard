@@ -1,5 +1,6 @@
 /* Table of contents
 ––––––––––––––––––––––––––––––––––––––––––––––––––
+- Plotly.js
 - Grid
 - Base Styles
 - Typography
@@ -17,10 +18,19 @@
 
 /* PLotly.js
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
-/* plotly.js's modebar's z-index is outta the roof by default - lower it down */
-.js-plotly-plot .plotly .modebar {
-    z-index: 0 important!;
-}
+/* plotly.js's modebar's z-index is 1001 by default
+ * https://github.com/plotly/plotly.js/blob/7e4d8ab164258f6bd48be56589dacd9bdd7fded2/src/css/_modebar.scss#L5
+ * In case a dropdown is above the graph, the dropdown's options
+ * will be rendered below the modebar
+ * Increase the select option's z-index
+ */
+
+/* This was actually not quite right -
+   dropdowns were overlapping each other (edited October 26)
+
+.Select {
+    z-index: 1002;
+}*/
 
 /* Grid
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
@@ -53,7 +63,7 @@
     margin-left: 4%; }
   .column:first-child,
   .columns:first-child {
-    margin-left: 0; }
+    margin-left: 0%; }
 
   .one.column,
   .one.columns                    { width: 4.66666666667%; }
@@ -156,8 +166,8 @@ blockquote {
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 a {
   color: #1EAEDB;
-  cursor: pointer;
-  text-decoration: underline;}
+  text-decoration: underline;
+  cursor: pointer;}
 a:hover {
   color: #0FA0CE; }
 
@@ -224,7 +234,6 @@ input[type="button"].button-primary:focus {
 
 /* Forms
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
-input,
 input[type="email"],
 input[type="number"],
 input[type="search"],
@@ -244,7 +253,6 @@ select {
   font-family: inherit;
   font-size: inherit; /*https://stackoverflow.com/questions/6080413/why-doesnt-input-inherit-the-font-from-body*/}
 /* Removes awkward default styles on some inputs for iOS */
-input,
 input[type="email"],
 input[type="number"],
 input[type="search"],
@@ -260,7 +268,6 @@ textarea {
   min-height: 65px;
   padding-top: 6px;
   padding-bottom: 6px; }
-input:focus,
 input[type="email"]:focus,
 input[type="number"]:focus,
 input[type="search"]:focus,
@@ -269,9 +276,9 @@ input[type="tel"]:focus,
 input[type="url"]:focus,
 input[type="password"]:focus,
 textarea:focus,
-select:focus {
-  border: 1px solid #33C3F0;
-  outline: 0; }
+/*select:focus {*/
+/*  border: 1px solid #33C3F0;*/
+/*  outline: 0; }*/
 label,
 legend {
   display: block;
@@ -309,6 +316,9 @@ li {
 
 /* Tables
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
+table {
+  border-collapse: collapse;
+}
 th,
 td {
   padding: 12px 15px;

@@ -1,31 +1,66 @@
+
 ## Introduction
-`dash-app-template` is a repository created to serve as a guideline of what a Dash app's repository should look like. 
+`dash-manufacture-spc-dashboard` is a dashboard for monitoring read-time process quality along manufacture production line. 
+This is a demo of Dash interactive Python framework developed by [Plotly](https//plot.ly/).
 
-In this area, include a brief description of what the application does, and include a link to the [Heroku application](https://dash-tsne.plot.ly/). 
+## Screenshots
+![initial](img/Screen_Shot.png)
 
-### app_mock.py and app.py
+## Screencast
+![Animated](img/screencast.gif)
 
-Explain why there is two different versions of the app if necessary. E.g. which app is the heroku version, and local version.
-
-### [Technique/field associated with the instrument]
-Give a brief description of the scientific background related to the application that you're interfacing with.
-
-### dash-core 
-Include a link to [Dash-Core](https://dash.plot.ly/dash-core-components); describe what it is and what it does.
+## Built With
+* [Dash](https://dash.plot.ly/) - Main server and interactive components 
+* [Plotly Python](https://plot.ly/python/) - Used to create the interactive plots
+* [Dash DAQ](dashdaq.io) - styled technical components for industrial applications
 
 ## Requirements
-Here you should include details of the Python version required to control your app; any packages; any requirements of the file structure; and the commands to run that will set up your app and get it ready to run.
+We suggest you to create a separate virtual environment running Python 3 for this app, and install all of the required dependencies there. Run in Terminal/Command Prompt:
 
-## How to use the app
-Here, you should put the command needed to run your app, and then the steps that the user should take to use it. You should include screenshots of the app running in your own browser to make it easier to follow along. 
+```
+git clone https://github.com/plotly/dash-manufacture-spc-dashboard.git
+cd dash-manufacture-spc-dashboard/
+python3 -m virtualenv venv
+```
+In UNIX system: 
 
-Then, show a step-by-step guide of how your app works, and what each control does.
+```
+source venv/bin/activate
+```
+In Windows: 
 
-If possible, include screenshots of something in the app failing, and, if any, the steps that the user can take to correct the error. 
+```
+venv\Scripts\activate
+```
 
-### Controls
-Here, provide a list of all of your controls and a description of what they do.
+To install all of the required packages to this environment, simply run:
+
+```
+pip install -r requirements.txt
+```
+
+and all of the required `pip` packages, will be installed, and the app will be able to run.
 
 
-## Resources
-If necessary, include resources like documentation for your app, or the pages associated with any external packages used in the project. 
+## How to use this app
+
+Run this app locally by:
+```
+python app.py
+```
+Open http://0.0.0.0:8051/ in your browser, you will see a live-updating dashboard.
+
+Click on **Learn more** button to learn more about how this app works.
+
+## What does this app shows
+
+Click on buttons in `Parameter' column to visualize details of trendline on the bottom panel.
+
+Click 'Start' button, trends are updated every two seconds to simulate real-time measurements. The Sparkline on top panel and Control chart on bottom panel show Shewhart process control using mock data. Data falling outside of control limit are signals indicating 'Out of Control(OOC)', and will 
+trigger alerts instantly for a detailed checkup. 
+
+Before measurements, operators may config specification parameters for selected process line(metrics).
+
+## Resources and references
+* [Shewhart statistical process control](https://en.wikipedia.org/wiki/Shewhart_individuals_control_chart)
+* [Dash User Guide](https://dash.plot.ly/)
