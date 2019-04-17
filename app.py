@@ -637,7 +637,7 @@ def build_chart_panel():
 
             dcc.Interval(
                 id='interval-component',
-                interval=1 * 1000,  # in milliseconds
+                interval=2 * 1000,  # in milliseconds
                 n_intervals=0,
                 disabled=True
             ),
