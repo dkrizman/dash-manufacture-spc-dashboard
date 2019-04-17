@@ -534,6 +534,7 @@ def generate_metric_row_helper(index):
                     'data': [{'x': [], 'y': [], 'mode': 'lines+markers', 'name': item,
                               'line': {'color': 'rgb(255,209,95)'}}],
                     'layout': {
+                        'uirevision': True,
                         'margin': dict(
                             l=0, r=0, t=4, b=4, pad=0
                         ),
@@ -637,7 +638,7 @@ def build_chart_panel():
 
             dcc.Interval(
                 id='interval-component',
-                interval=1 * 1000,  # in milliseconds
+                interval=2 * 1000,  # in milliseconds
                 n_intervals=0,
                 disabled=True
             ),
@@ -719,6 +720,8 @@ def generate_graph(interval, specs_dict, col):
     len_figure = len(fig['data'][0]['x'])
 
     fig['layout'] = dict(
+        hovermode='closest',
+        uirevision=col,
         paper_bgcolor='rgb(45, 48, 56)',
         plot_bgcolor='rgb(45, 48, 56)',
         legend={'font': {'color': '#95969A'}},
@@ -1142,6 +1145,7 @@ def update_piechart(interval, stored_data):
                 'textinfo': 'label'
             }],
         'layout': {
+            'uirevision': True,
             'font': {'color': '#95969A'},
             'showlegend': True,
             'legend': {'font': {'color': '#95969A'}},
