@@ -731,7 +731,7 @@ def generate_graph(interval, specs_dict, col):
             'zeroline': False,
             'title': 'Batch_Num',
             'showline': False,
-            'domain': [0, 0.7],
+            'domain': [0, 0.8],
             'titlefont': {'color': '#95969A'}
         },
         yaxis={
@@ -833,8 +833,9 @@ def generate_graph(interval, specs_dict, col):
             'titlefont': {'color': '#95969A'}
         },
         yaxis2={
-            'title': 'value',
-            'anchor': 'x2',
+            'anchor': 'free',
+            'overlaying': 'y',
+            'side': 'right',
             'showticklabels': False,
             'titlefont': {'color': '#95969A'}
         }
