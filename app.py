@@ -554,9 +554,8 @@ def generate_metric_row_helper(index):
                     id=ooc_graph_id,
                     color={"gradient": True, "ranges": {"green": [0, 3], "yellow": [3, 7], "red": [7, 15]}},
                     showCurrentValue=False,
-                    style={'width': '100%'},
                     max=15,
-                    value=15
+                    value=0
                 )
         },
         {
@@ -923,25 +922,33 @@ def update_sparkline(interval, param):
 
 def update_count(interval, col, data):
     if interval == 0:
-        return '0', '0.00%', 0, theme['primary']
+        print('interval is: ', interval)
+        return '0', '0.00%', 0.00001, theme['primary']
 
-    if interval >= max_length:
-        total_count = max_length - 1
-    else:
-        total_count = interval - 1
+    elif interval > 0:
 
-    ooc_percentage_f = data[col]['ooc'][total_count] * 100
-    ooc_percentage_str = "%.2f" % ooc_percentage_f + '%'
+        if interval >= max_length:
+            total_count = max_length - 1
+        else:
+            total_count = interval - 1
 
-    if ooc_percentage_f > 15:
-        ooc_percentage_f = 15
+        ooc_percentage_f = data[col]['ooc'][total_count] * 100
+        ooc_percentage_str = "%.2f" % ooc_percentage_f + '%'
 
-    ooc_grad_val = float(ooc_percentage_f)
+        # Set maximum ooc to 15 for better grad bar display
+        if ooc_percentage_f > 15:
+            ooc_percentage_f = 15
 
-    if 0 <= ooc_grad_val <= 5:
-        color = theme['primary']
-    else:
-        color = '#FF0000'
+        if ooc_percentage_f == 0.0:
+            ooc_grad_val = 0.00001
+        else:
+            ooc_grad_val = float(ooc_percentage_f)
+
+        # Set indicator theme according to threshold 5%
+        if 0 <= ooc_grad_val <= 5:
+            color = theme['primary']
+        else:
+            color = '#FF0000'
 
     return str(total_count + 1), ooc_percentage_str, ooc_grad_val, color
 
