@@ -2,6 +2,7 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
+from dash.exceptions import PreventUpdate
 import dash_table
 import plotly.graph_objs as go
 import dash_daq as daq
@@ -58,7 +59,7 @@ def build_tabs():
         children=[
             dcc.Tabs(
                 id='app-tabs',
-                value='tab2',
+                value='tab1',
                 className='custom-tabs',
                 children=[
                     dcc.Tab(
@@ -67,6 +68,15 @@ def build_tabs():
                         value='tab1',
                         className='custom-tab',
                         selected_className='custom-tab--selected',
+                        disabled_style={
+                            'backgroundColor': '#2d3038',
+                            'color': '#95969A',
+                            'borderColor': '#23262E',
+                            'display': 'flex',
+                            'flex-direction': 'column',
+                            'alignItems': 'center',
+                            'justifyContent': 'center'
+                        },
                         disabled=False
                     ),
                     dcc.Tab(
@@ -75,6 +85,15 @@ def build_tabs():
                         value='tab2',
                         className='custom-tab',
                         selected_className='custom-tab--selected',
+                        disabled_style= {
+                            'backgroundColor': '#2d3038',
+                            'color': '#95969A',
+                            'borderColor': '#23262E',
+                            'display': 'flex',
+                            'flex-direction': 'column',
+                            'alignItems': 'center',
+                            'justifyContent': 'center'
+                        },
                         disabled=False)
                 ]
             )
@@ -235,6 +254,9 @@ app.layout = html.Div(
             id='app-content',
             className='container scalable'
         ),
+        html.Button('Proceed to Measurement', id='tab-trigger-btn', n_clicks=0,
+                    style={'display': 'inline-block',
+                           'float': 'right'}),
         dcc.Store(
             id='value-setter-store',
             data=init_value_setter_store()
@@ -843,15 +865,38 @@ def generate_graph(interval, specs_dict, col):
     return fig
 
 
+# @app.callback(
+#     output=Output('app-content', 'children'),
+#     inputs=[Input('app-tabs', 'value')]
+# )
+# def render_tab_content(tab):
+#     if tab == 'tab1':
+#         return build_tab_1()
+#     elif tab == 'tab2':
+#         return daq.DarkThemeProvider(theme=theme, children=[
+#             html.Div(
+#                 id='status-container',
+#                 children=[
+#                     build_quick_stats_panel(),
+#                     build_top_panel(),
+#                     build_chart_panel(),
+#                 ]
+#             )
+#         ])
+
 @app.callback(
-    output=Output('app-content', 'children'),
-    inputs=[Input('app-tabs', 'value')]
+    output=[Output('app-tabs', 'value'),
+            Output('app-content', 'children'),
+            Output('Specs-tab', 'disabled'),
+            Output('Control-chart-tab', 'disabled')],
+    inputs=[Input('tab-trigger-btn', 'n_clicks')]
 )
-def render_content(tab):
-    if tab == 'tab1':
-        return build_tab_1()
-    elif tab == 'tab2':
-        return daq.DarkThemeProvider(theme=theme, children=[
+def render_tab_content(tab_switch):
+    if tab_switch == 0:
+        return 'tab1', build_tab_1(), False, True
+
+    if tab_switch:
+        return ['tab2', daq.DarkThemeProvider(theme=theme, children=[
             html.Div(
                 id='status-container',
                 children=[
@@ -860,7 +905,7 @@ def render_content(tab):
                     build_chart_panel(),
                 ]
             )
-        ])
+        ]), True, False]
 
 
 # ======= Callbacks for modal popup =======
@@ -922,7 +967,6 @@ def update_sparkline(interval, param):
 
 def update_count(interval, col, data):
     if interval == 0:
-        print('interval is: ', interval)
         return '0', '0.00%', 0.00001, theme['primary']
 
     elif interval > 0:

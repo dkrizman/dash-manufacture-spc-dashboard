@@ -56,7 +56,7 @@ body {
     height: 20px;
 }
 
-#Specs-tab.custom-tab, #Control-chart-tab.custom-tab {
+#Specs-tab.custom-tab, #Control-chart-tab.custom-tab{
     background-color: #2d3038;
     color: #95969A;
     border-color: #23262E;
@@ -168,6 +168,17 @@ body {
 .closeButton:hover {
     color: #FFD15F;
 }
+
+#tab-trigger-btn {
+    margin-right: 4%;
+    margin-top: 20px;
+    color: white;
+}
+
+#tab-trigger-btn:hover {
+    color: #FFD15F;
+}
+
 
 #quick-stats.row {
     display: flex;
