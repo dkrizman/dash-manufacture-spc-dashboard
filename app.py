@@ -216,7 +216,7 @@ def generate_modal():
                         Click on buttons in `Parameter' column to visualize details of measurement trendlines on the bottom panel.
 
                         The Sparkline on top panel and Control chart on bottom panel show Shewhart process monitor using mock data. 
-                        The trend is updated every second to simulate real-time measurements. Data falling outside of six-sigma control limit are signals indicating 'Out of Control(OOC)', and will 
+                        The trend is updated every other second to simulate real-time measurements. Data falling outside of six-sigma control limit are signals indicating 'Out of Control(OOC)', and will 
                         trigger alerts instantly for a detailed checkup. 
                     '''))
                     )
@@ -649,7 +649,7 @@ def build_chart_panel():
             dcc.Graph(
                 id="control-chart-live",
                 figure=go.Figure({
-                    'data': [{'x': [], 'y': [], 'mode': 'lines+markers', 'name': 'Metric1'}],
+                    'data': [{'x': [], 'y': [], 'mode': 'lines+markers', 'name': params[1]}],
                     'layout': {
                         'paper_bgcolor': 'rgb(45, 48, 56)',
                         'plot_bgcolor': 'rgb(45, 48, 56)'
@@ -949,120 +949,120 @@ def update_count(interval, col, data):
 # ======= update each row at interval =========
 @app.callback(
     output=[
-        Output('Metric1' + suffix_count, 'children'),
-        Output('Metric1' + suffix_sparkline_graph, 'extendData'),
-        Output('Metric1' + suffix_ooc_n, 'children'),
-        Output('Metric1' + suffix_ooc_g, 'value'),
-        Output('Metric1' + suffix_indicator, 'color')
+        Output(params[1] + suffix_count, 'children'),
+        Output(params[1] + suffix_sparkline_graph, 'extendData'),
+        Output(params[1] + suffix_ooc_n, 'children'),
+        Output(params[1] + suffix_ooc_g, 'value'),
+        Output(params[1] + suffix_indicator, 'color')
     ],
     inputs=[Input('interval-component', 'n_intervals')],
     state=[State('value-setter-store', 'data')]
 )
 def update_param1_row(interval, stored_data):
-    count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Metric1', stored_data)
-    spark_line_data = update_sparkline(interval, 'Metric1')
+    count, ooc_n, ooc_g_value, indicator = update_count(interval, params[1], stored_data)
+    spark_line_data = update_sparkline(interval, params[1])
     return count, spark_line_data, ooc_n, ooc_g_value, indicator
 
 
 @app.callback(
     output=[
-        Output('Metric2' + suffix_count, 'children'),
-        Output('Metric2' + suffix_sparkline_graph, 'extendData'),
-        Output('Metric2' + suffix_ooc_n, 'children'),
-        Output('Metric2' + suffix_ooc_g, 'value'),
-        Output('Metric2' + suffix_indicator, 'color')
+        Output(params[2] + suffix_count, 'children'),
+        Output(params[2] + suffix_sparkline_graph, 'extendData'),
+        Output(params[2] + suffix_ooc_n, 'children'),
+        Output(params[2] + suffix_ooc_g, 'value'),
+        Output(params[2] + suffix_indicator, 'color')
     ],
     inputs=[Input('interval-component', 'n_intervals')],
     state=[State('value-setter-store', 'data')]
 )
 def update_param2_row(interval, stored_data):
-    count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Metric2', stored_data)
-    spark_line_data = update_sparkline(interval, 'Metric2')
+    count, ooc_n, ooc_g_value, indicator = update_count(interval, params[2], stored_data)
+    spark_line_data = update_sparkline(interval, params[2])
     return count, spark_line_data, ooc_n, ooc_g_value, indicator
 
 
 @app.callback(
     output=[
-        Output('Metric3' + suffix_count, 'children'),
-        Output('Metric3' + suffix_sparkline_graph, 'extendData'),
-        Output('Metric3' + suffix_ooc_n, 'children'),
-        Output('Metric3' + suffix_ooc_g, 'value'),
-        Output('Metric3' + suffix_indicator, 'color')
+        Output(params[3] + suffix_count, 'children'),
+        Output(params[3] + suffix_sparkline_graph, 'extendData'),
+        Output(params[3] + suffix_ooc_n, 'children'),
+        Output(params[3] + suffix_ooc_g, 'value'),
+        Output(params[3] + suffix_indicator, 'color')
     ],
     inputs=[Input('interval-component', 'n_intervals')],
     state=[State('value-setter-store', 'data')]
 )
 def update_param3_row(interval, stored_data):
-    count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Metric3', stored_data)
-    spark_line_data = update_sparkline(interval, 'Metric3')
+    count, ooc_n, ooc_g_value, indicator = update_count(interval, params[3], stored_data)
+    spark_line_data = update_sparkline(interval, params[3])
     return count, spark_line_data, ooc_n, ooc_g_value, indicator
 
 
 @app.callback(
     output=[
-        Output('Thickness1' + suffix_count, 'children'),
-        Output('Thickness1' + suffix_sparkline_graph, 'extendData'),
-        Output('Thickness1' + suffix_ooc_n, 'children'),
-        Output('Thickness1' + suffix_ooc_g, 'value'),
-        Output('Thickness1' + suffix_indicator, 'color')
+        Output(params[4] + suffix_count, 'children'),
+        Output(params[4] + suffix_sparkline_graph, 'extendData'),
+        Output(params[4] + suffix_ooc_n, 'children'),
+        Output(params[4] + suffix_ooc_g, 'value'),
+        Output(params[4] + suffix_indicator, 'color')
     ],
     inputs=[Input('interval-component', 'n_intervals')],
     state=[State('value-setter-store', 'data')]
 )
 def update_param4_row(interval, stored_data):
-    count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Thickness1', stored_data)
-    spark_line_data = update_sparkline(interval, 'Thickness1')
+    count, ooc_n, ooc_g_value, indicator = update_count(interval, params[4], stored_data)
+    spark_line_data = update_sparkline(interval, params[4])
     return count, spark_line_data, ooc_n, ooc_g_value, indicator
 
 
 @app.callback(
     output=[
-        Output('Width1' + suffix_count, 'children'),
-        Output('Width1' + suffix_sparkline_graph, 'extendData'),
-        Output('Width1' + suffix_ooc_n, 'children'),
-        Output('Width1' + suffix_ooc_g, 'value'),
-        Output('Width1' + suffix_indicator, 'color')
+        Output(params[5] + suffix_count, 'children'),
+        Output(params[5] + suffix_sparkline_graph, 'extendData'),
+        Output(params[5] + suffix_ooc_n, 'children'),
+        Output(params[5] + suffix_ooc_g, 'value'),
+        Output(params[5] + suffix_indicator, 'color')
     ],
     inputs=[Input('interval-component', 'n_intervals')],
     state=[State('value-setter-store', 'data')]
 )
 def update_param5_row(interval, stored_data):
-    count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Width1', stored_data)
-    spark_line_data = update_sparkline(interval, 'Width1')
+    count, ooc_n, ooc_g_value, indicator = update_count(interval, params[5], stored_data)
+    spark_line_data = update_sparkline(interval, params[5])
     return count, spark_line_data, ooc_n, ooc_g_value, indicator
 
 
 @app.callback(
     output=[
-        Output('Metric4' + suffix_count, 'children'),
-        Output('Metric4' + suffix_sparkline_graph, 'extendData'),
-        Output('Metric4' + suffix_ooc_n, 'children'),
-        Output('Metric4' + suffix_ooc_g, 'value'),
-        Output('Metric4' + suffix_indicator, 'color')
+        Output(params[6] + suffix_count, 'children'),
+        Output(params[6] + suffix_sparkline_graph, 'extendData'),
+        Output(params[6] + suffix_ooc_n, 'children'),
+        Output(params[6] + suffix_ooc_g, 'value'),
+        Output(params[6] + suffix_indicator, 'color')
     ],
     inputs=[Input('interval-component', 'n_intervals')],
     state=[State('value-setter-store', 'data')]
 )
 def update_param6_row(interval, stored_data):
-    count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Metric4', stored_data)
-    spark_line_data = update_sparkline(interval, 'Metric4')
+    count, ooc_n, ooc_g_value, indicator = update_count(interval, params[6], stored_data)
+    spark_line_data = update_sparkline(interval, params[6])
     return count, spark_line_data, ooc_n, ooc_g_value, indicator
 
 
 @app.callback(
     output=[
-        Output('Para1' + suffix_count, 'children'),
-        Output('Para1' + suffix_sparkline_graph, 'extendData'),
-        Output('Para1' + suffix_ooc_n, 'children'),
-        Output('Para1' + suffix_ooc_g, 'value'),
-        Output('Para1' + suffix_indicator, 'color')
+        Output(params[7] + suffix_count, 'children'),
+        Output(params[7] + suffix_sparkline_graph, 'extendData'),
+        Output(params[7] + suffix_ooc_n, 'children'),
+        Output(params[7] + suffix_ooc_g, 'value'),
+        Output(params[7] + suffix_indicator, 'color')
     ],
     inputs=[Input('interval-component', 'n_intervals')],
     state=[State('value-setter-store', 'data')]
 )
 def update_param7_row(interval, stored_data):
-    count, ooc_n, ooc_g_value, indicator = update_count(interval, 'Para1', stored_data)
-    spark_line_data = update_sparkline(interval, 'Para1')
+    count, ooc_n, ooc_g_value, indicator = update_count(interval, params[7], stored_data)
+    spark_line_data = update_sparkline(interval, params[7])
     return count, spark_line_data, ooc_n, ooc_g_value, indicator
 
 
@@ -1071,13 +1071,13 @@ def update_param7_row(interval, stored_data):
     output=Output('control-chart-live', 'figure'),
     inputs=[
         Input('interval-component', 'n_intervals'),
-        Input('Metric1' + suffix_button_id, 'n_clicks'),
-        Input('Metric2' + suffix_button_id, 'n_clicks'),
-        Input('Metric3' + suffix_button_id, 'n_clicks'),
-        Input('Thickness1' + suffix_button_id, 'n_clicks'),
-        Input('Width1' + suffix_button_id, 'n_clicks'),
-        Input('Metric4' + suffix_button_id, 'n_clicks'),
-        Input('Para1' + suffix_button_id, 'n_clicks'),
+        Input(params[1] + suffix_button_id, 'n_clicks'),
+        Input(params[2] + suffix_button_id, 'n_clicks'),
+        Input(params[3] + suffix_button_id, 'n_clicks'),
+        Input(params[4] + suffix_button_id, 'n_clicks'),
+        Input(params[5] + suffix_button_id, 'n_clicks'),
+        Input(params[6] + suffix_button_id, 'n_clicks'),
+        Input(params[7] + suffix_button_id, 'n_clicks'),
     ],
     state=[State("value-setter-store", 'data'), State('control-chart-live', 'figure')]
 )
@@ -1086,7 +1086,7 @@ def update_control_chart(interval, n1, n2, n3, n4, n5, n6, n7, data, cur_fig):
     ctx = dash.callback_context
 
     if not ctx.triggered:
-        return generate_graph(interval, data, 'Metric1')
+        return generate_graph(interval, data, params[1])
 
     if ctx.triggered:
         # Get most recently triggered id and prop_type
