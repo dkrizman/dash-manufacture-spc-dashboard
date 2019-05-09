@@ -337,15 +337,17 @@ def show_current_specs(n_clicks, dd_select, store_data):
         new_df = pd.DataFrame.from_dict(new_df_dict)
         return dash_table.DataTable(
             style_header={
-                'backgroundColor': 'white',
+                'backgroundColor': '#2d3038',
                 'fontWeight': 'bold'
             },
+            style_as_list_view=True,
             style_cell_conditional=[
                 {
                     'if': {'column_id': c},
                     'textAlign': 'left'
                 } for c in ['Specs']
             ],
+            style_cell={'backgroundColor': '#2d3038', 'color': '#95969A', 'border': '#53555B'},
             data=new_df.to_dict('rows'),
             columns=[{'id': c, 'name': c} for c in ['Specs', 'Current Setup']]
         )
@@ -865,35 +867,17 @@ def generate_graph(interval, specs_dict, col):
     return fig
 
 
-# @app.callback(
-#     output=Output('app-content', 'children'),
-#     inputs=[Input('app-tabs', 'value')]
-# )
-# def render_tab_content(tab):
-#     if tab == 'tab1':
-#         return build_tab_1()
-#     elif tab == 'tab2':
-#         return daq.DarkThemeProvider(theme=theme, children=[
-#             html.Div(
-#                 id='status-container',
-#                 children=[
-#                     build_quick_stats_panel(),
-#                     build_top_panel(),
-#                     build_chart_panel(),
-#                 ]
-#             )
-#         ])
-
 @app.callback(
     output=[Output('app-tabs', 'value'),
             Output('app-content', 'children'),
             Output('Specs-tab', 'disabled'),
-            Output('Control-chart-tab', 'disabled')],
+            Output('Control-chart-tab', 'disabled'),
+            Output('tab-trigger-btn', 'style')],
     inputs=[Input('tab-trigger-btn', 'n_clicks')]
 )
 def render_tab_content(tab_switch):
     if tab_switch == 0:
-        return 'tab1', build_tab_1(), False, True
+        return 'tab1', build_tab_1(), False, True, {'display': 'inline-block', 'float': 'right'}
 
     if tab_switch:
         return ['tab2', daq.DarkThemeProvider(theme=theme, children=[
@@ -905,7 +889,7 @@ def render_tab_content(tab_switch):
                     build_chart_panel(),
                 ]
             )
-        ]), True, False]
+        ]), True, False, {'display': 'none'}]
 
 
 # ======= Callbacks for modal popup =======

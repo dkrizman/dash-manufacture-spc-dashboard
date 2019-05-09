@@ -288,11 +288,11 @@ body {
     line-height: 3;
 }
 
-.dash-spreadsheet-container .dash-spreadsheet-inner * {
-    background-color: #2d3038;
-    color: #95969A;
-    border: #53555B;
-}
+/*.dash-spreadsheet-container .dash-spreadsheet-inner * {*/
+    /*background-color: #2d3038;*/
+    /*color: #95969A;*/
+    /*border: #53555B !important;*/
+/*}*/
 
 #value-setter-set-btn:hover, #value-setter-view-btn:hover {
     color: #FFFFFF;
