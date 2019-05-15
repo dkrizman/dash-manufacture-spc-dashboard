@@ -56,7 +56,7 @@ body {
     height: 20px;
 }
 
-#Specs-tab.custom-tab, #Control-chart-tab.custom-tab {
+#Specs-tab.custom-tab, #Control-chart-tab.custom-tab{
     background-color: #2d3038;
     color: #95969A;
     border-color: #23262E;
@@ -100,16 +100,31 @@ body {
     display: none;
 }
 
-#Metric1_button, #Metric2_button, #Metric3_button, #Thickness1_button, #Width1_button, #Para1_button, #Metric4_button {
+#Diameter_button,
+#Etch1_button,
+#Film-Thickness_button,
+#Etch2_button,
+#Line-Width_button,
+#Overlay_button,
+#Volume_button {
     padding: 0px 0px;
     color: #95969A;
 }
 
-#Metric1_button:hover, #Metric2_button:hover, #Metric3_button:hover, #Para1_button:hover, #Metric4_button:hover, #Thickness1_button:hover, #Width1_button:hover {
-    color: #FFFFFF;
+.metric-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
 }
 
-#Metric1_OOC_graph > div > div, #Metric2_OOC_graph > div > div, #Metric3_OOC_graph > div > div, #Metric4_OOC_graph > div > div,#Para1_OOC_graph > div > div,#Thickness1_OOC_graph > div > div, #Width1_OOC_graph > div > div, #Metric6_OOC_graph > div > div {
+#Diameter_OOC_graph > div > div,
+#Etch1_OOC_graph > div > div,
+#Film-Thickness_OOC_graph > div > div,
+#Metric4_OOC_graph > div > div,
+#Etch2_OOC_graph > div > div,
+#Line-Width_OOC_graph > div > div,
+#Overlay_OOC_graph > div > div,
+#Volume_OOC_graph > div > div {
     width: 100%;
 }
 
@@ -153,6 +168,17 @@ body {
 .closeButton:hover {
     color: #FFD15F;
 }
+
+#tab-trigger-btn {
+    margin-right: 4%;
+    margin-top: 20px;
+    color: white;
+}
+
+#tab-trigger-btn:hover {
+    color: #FFD15F;
+}
+
 
 #quick-stats.row {
     display: flex;
@@ -262,11 +288,11 @@ body {
     line-height: 3;
 }
 
-.dash-spreadsheet-container .dash-spreadsheet-inner * {
-    background-color: #2d3038;
-    color: #95969A;
-    border: #53555B;
-}
+/*.dash-spreadsheet-container .dash-spreadsheet-inner * {*/
+    /*background-color: #2d3038;*/
+    /*color: #95969A;*/
+    /*border: #53555B !important;*/
+/*}*/
 
 #value-setter-set-btn:hover, #value-setter-view-btn:hover {
     color: #FFFFFF;
